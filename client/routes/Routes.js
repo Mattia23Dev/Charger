@@ -28,6 +28,7 @@ import Prices from "../screens/user/Prices.js";
 import Profile from "../screens/user/Profile.js";
 import Payments from "../screens/user/Payments.js";
 import NoleggiGratis from "../screens/user/NoleggiGratis.js";
+import AddCard from "../screens/user/AddCard.js";
 
 const Stack = createNativeStackNavigator();
 
@@ -62,6 +63,7 @@ const Routes = () => {
         <Stack.Screen name="prices" component={Prices} />
         <Stack.Screen name="payments" component={Payments} />
         <Stack.Screen name="noleggigratis" component={NoleggiGratis} />
+        <Stack.Screen name="addcard" component={AddCard} />
 
         <Stack.Screen name="stationdetails" component={StationDetailScreen} />
         <Stack.Screen name="viewcategories" component={ViewCategoryScreen} />

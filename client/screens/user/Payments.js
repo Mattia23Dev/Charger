@@ -36,6 +36,11 @@ const Payments = ({navigation, route}) => {
         }
     };
 
+    const handleNavigate = () => {
+      navigation.navigate("addcard");
+    }
+
+
   return (
     <GestureHandlerRootView> 
     <View style={styles.container}>
@@ -93,7 +98,8 @@ const Payments = ({navigation, route}) => {
                     marginLeft: 0,
                     flexDirection: 'row',
                     width: '90%'
-              }}>
+              }}
+              onPress={handleNavigate}>
                 <Ionicons
                 name="add-outline"
                 color={colors.orange}

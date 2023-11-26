@@ -1,7 +1,7 @@
 import MapView, {Marker, PROVIDER_GOOGLE, PROVIDER_DEFAULT} from 'react-native-maps';
 import * as Location from 'expo-location';
 import React, { useRef, useState, useEffect } from 'react';
-import { Animated, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Button, ScrollView, TextInput, TouchableWithoutFeedback } from 'react-native';
+import { Animated, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Button, ScrollView, TextInput, TouchableWithoutFeedback, Switch } from 'react-native';
 import {LinearGradient} from 'expo-linear-gradient';
 import effect from '../../assets/imageeffect.png';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -128,6 +128,8 @@ export default function Home({navigation, route}) {
   const [isScanning, setIsScanning] = useState(false);
   const [hasPermission, setHasPermission] = useState(null);
 
+  const [stationData, setStationData] = useState([]);
+
   const [showMenu, setShowMenu] = useState(false);
   
   const offsetValue = useRef(new Animated.Value(0)).current;
@@ -136,7 +138,7 @@ export default function Home({navigation, route}) {
   const closeButtonOffset = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-
+    setStationData(stationsData);
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
@@ -171,8 +173,13 @@ export default function Home({navigation, route}) {
   };
 
   const [filterText, setFilterText] = useState('');
+  const [filterPopup, setFilterPopup] = useState(false);
   const [selectedStationId, setSelectedStationId] = useState(null);
   const [openBottom, setOpenBottom] = useState(false);
+
+  const [onlyOpen, setOnlyOpen] = useState(false);
+  const [onlyAvailable, setOnlyAvailable] = useState(false);
+  const [onlyClosed, setOnlyClosed] = useState(false);
 
   const handleInputChange = (text) => {
     setFilterText(text);
@@ -194,6 +201,20 @@ export default function Home({navigation, route}) {
 
   const navigatePageStation = () => {
     navigation.navigate("stationdetails",{station: selectedStationId})
+  };
+
+  const hanldeFilterStation = () => {
+
+    const filteredStations = stationsData.filter(station => {
+      const isOpen = onlyOpen ? station.status === 'online' : true;
+      const isAvailable = onlyAvailable ? station.numberPowerBank > 0 : true;
+      const isClosed = onlyClosed ? station.numberPowerBank < 8 : true;
+  
+      return isOpen && isAvailable && isClosed;
+    });
+  
+    setStationData(filteredStations);
+    setFilterPopup(false);
   }
 
   return (
@@ -209,17 +230,26 @@ export default function Home({navigation, route}) {
                 onBarCodeScanned={handleBarCodeScanned}
                 style={styles.cameraScanner}
                 />
-            )}   
+            )}
+          {filterPopup && (
+              <View style={styles.popupShadow}>
+                <FilterPopup 
+                setPopupFilter={setFilterPopup}
+                onlyOpen={onlyOpen}
+                setOnlyOpen={setOnlyOpen}
+                onlyClosed={onlyClosed}
+                setOnlyClosed={setOnlyClosed}
+                onlyAvailable={onlyAvailable}
+                setOnlyAvailable={setOnlyAvailable}
+                hanldeFilterStation={hanldeFilterStation} />
+              </View>
+            )}    
     <SafeAreaView style={styles.container}> 
 
     <ScrollView style={{width: '70%'}}>
       <View style={{ justifyContent: 'flex-start', padding: 15, width: '100%' }}>
       <TouchableOpacity 
-<<<<<<< HEAD
         style={{padding: 1, borderRadius: 50, width: 42, height: 42, justifyContent: 'center', alignItems: 'center', marginBottom: 20, borderWidth: 1, borderColor: '#c2c2c1', position: 'sticky'}}
-=======
-        style={{padding: 3, borderRadius: 50, width: 40, height: 40, justifyContent: 'center', alignItems: 'center', marginBottom: 20, borderWidth: 2, borderColor: 'black'}}
->>>>>>> 3f4512eb85b15625a2866a4f41becc3d80dff01c
           onPress={() => {
             Animated.timing(scaleValue, {
               toValue: showMenu ? 1 : 0.88,
@@ -368,7 +398,6 @@ export default function Home({navigation, route}) {
             </View>
 
           </TouchableOpacity>
-<<<<<<< HEAD
               <View
                 style={{
                   width: '58%',
@@ -388,7 +417,7 @@ export default function Home({navigation, route}) {
               >
                 <Ionicons name='search' color={colors.dark} size={20} />
                 <TextInput
-                style={{marginLeft: 5, fontSize: 17, fontWeight: 600, color: colors.dark}}
+                style={{marginLeft: 6, fontSize: 17, fontWeight: 600, color: colors.dark}}
                 placeholder="Cerca posizione"
                 value={filterText}
                 onChangeText={handleInputChange}
@@ -396,20 +425,23 @@ export default function Home({navigation, route}) {
               </View>
 
 
-            <View style={{
-              padding: 6, 
-              borderRadius: 50, 
-              width: 52, height: 52, 
-              justifyContent: 'center', 
-              alignItems: 'center', 
-              marginBottom: 20, 
-              borderWidth: 1.2, 
-              borderColor: '#c2c2c1',
-              marginTop: 25,
-              marginLeft: 20,
-            }}>
-                <Icon name="filter" size={20} color="black" /> 
-            </View>
+              <TouchableOpacity onPress={() => setFilterPopup(true)}>
+                <View style={{
+                  padding: 6, 
+                  borderRadius: 50, 
+                  width: 52, height: 52, 
+                  justifyContent: 'center', 
+                  alignItems: 'center', 
+                  marginBottom: 20, 
+                  borderWidth: 1.2, 
+                  borderColor: '#c2c2c1',
+                  marginTop: 25,
+                  marginLeft: 20,
+                }}>
+                    <Icon name="filter" size={20} color="black" /> 
+                </View>
+              </TouchableOpacity>
+
 
           </View>
           <TouchableWithoutFeedback 
@@ -440,10 +472,6 @@ export default function Home({navigation, route}) {
             setShowMenu(false);
           } : null}>
           <View style={styles.bodyContainer}> 
-=======
-          <View style={styles.bodyContainer}>
-          <Image source={effect} style={styles.effect} />
->>>>>>> 3f4512eb85b15625a2866a4f41becc3d80dff01c
             <View style={styles.mapcontainer}>
             <Image source={effect} style={styles.effect} />
             <MapView style={styles.map} 
@@ -454,7 +482,7 @@ export default function Home({navigation, route}) {
                 customMapStyle={customMapStyle}>
                 {/*<Marker coordinate={mapRegion} title='Marker'
                 />*/}
-                {stationsData.map((station) => (
+                {stationData && stationData.map((station) => (
                     <Marker
                       key={station.id}
                       coordinate={station.coordinate}
@@ -562,7 +590,96 @@ const TabButton = (currentTab, setCurrentTab, title, image, route, navigation, u
   );
 }
 
+const FilterPopup = ({setPopupFilter, onlyOpen, setOnlyOpen, onlyAvailable, setOnlyAvailable, onlyClosed, setOnlyClosed, hanldeFilterStation}) => {
+  return (
+    <View style={styles.popupFilter}>
+      <View style={styles.topPopup}>
+        <TouchableOpacity style={{
+          backgroundColor: colors.light,
+          width: 25,
+          height: 25,
+          borderRadius: 50,
+          justifyContent: 'center',
+          alignItems: 'center',
+          position: 'absolute',
+          left: 15,
+          top: 20,
+        }} 
+        onPress={() => setPopupFilter(false)}>
+          <Ionicons name='close' size={20} color={colors.dark} />
+        </TouchableOpacity>
+        <Text style={{color: colors.light, fontSize: 22, fontWeight: 600,}}>Filtra</Text>
+      </View>
+      <View style={styles.bodyFilter}>
+        <View style={styles.filterItem}>
+        <Text style={{color: colors.muted, fontWeight: '500', fontSize: 16,}}>Mostra solo aperti</Text>
+          <Switch
+            trackColor={{ false: colors.muted, true: colors.orange }}
+            thumbColor={onlyOpen ? '#f4f3f4' : '#f4f3f4'}
+            ios_backgroundColor="#3e3e3e"
+            onValueChange={() => setOnlyOpen(!onlyOpen)}
+            value={onlyOpen}
+          />
+        </View>
+        <View style={styles.filterItem}>
+        <Text style={{color: colors.muted, fontWeight: '500', fontSize: 16, width: '60%'}}>Mostra solo con batterie disponibili</Text>
+          <Switch
+            trackColor={{ false: colors.muted, true: colors.orange }}
+            thumbColor={onlyAvailable ? '#f4f3f4' : '#f4f3f4'}
+            ios_backgroundColor="#3e3e3e"
+            onValueChange={() => setOnlyAvailable(!onlyAvailable)}
+            value={onlyAvailable}
+          />
+        </View>
+        <View style={styles.filterItem}>
+        <Text style={{color: colors.muted, fontWeight: '500', fontSize: 16, width: '60%'}}>Mostra solo con slot liberi</Text>
+          <Switch
+            trackColor={{ false: colors.muted, true: colors.orange }}
+            thumbColor={onlyClosed ? '#f4f3f4' : '#f4f3f4'}
+            ios_backgroundColor="#3e3e3e"
+            onValueChange={() => setOnlyClosed(!onlyClosed)}
+            value={onlyClosed}
+          />
+        </View>
+      </View>
+      <View style={{
+        justifyContent: 'center',
+        width: '100%',
+        alignItems:'center',
+        display: 'flex'
+      }}>
+        <TouchableOpacity style={{
+          marginTop: 20,
+          width: '90%',
+          backgroundColor: colors.orange,
+          borderRadius: 30,
+          paddingVertical: 15,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+        onPress={hanldeFilterStation}>
+          <Text style={{color: colors.light, fontWeight: 500, fontSize: 18}}>Applica</Text>
+        </TouchableOpacity>        
+      </View>
+
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  popupShadow: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
   container: {
     flex: 1,
     alignItems: 'flex-start',
@@ -652,5 +769,45 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     zIndex: 11,
+  },
+
+  popupFilter: {
+    backgroundColor: 'white', // Colore di sfondo del popup
+    padding: 0,
+    paddingBottom: 20,
+    borderRadius: 10,
+    elevation: 5, // Ombra su Android
+    shadowColor: 'black', // Ombra su iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    width: '80%',
+  },
+  topPopup: {
+    width: '100%',
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    backgroundColor: colors.dark,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    paddingVertical: 20,
+    position: 'relative',
+  },
+  bodyFilter: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  filterItem: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '90%',
+    borderBottomColor: '#C6C6C6',
+    borderBottomWidth: 1,
+    paddingVertical: 10,
   },
 });

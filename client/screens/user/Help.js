@@ -1,13 +1,8 @@
-<<<<<<< HEAD
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native'
 import { Ionicons } from "@expo/vector-icons";
-=======
-import { View, Text,TouchableOpacity, StyleSheet } from 'react-native'
->>>>>>> 3f4512eb85b15625a2866a4f41becc3d80dff01c
 import React from 'react'
 import { colors } from '../../constants';
 
-<<<<<<< HEAD
 const Help = ({navigation}) => {
   return (
     <View style={styles.container}>
@@ -102,160 +97,10 @@ const Help = ({navigation}) => {
                 <Text style={{color: colors.light, fontWeight: 500, marginLeft: 4, fontSize: 18}}>assistenza@nextacharge.com</Text>
               </TouchableOpacity>
             </View>
-=======
-
-
-const Help = () => {
-  return (
-    <View style={styles.container}>
-      <TouchableOpacity style={styles.backButton}>
-        {/* Icona freccia */}
-        <Text style={styles.backButtonText}>{'<'}</Text>
-      </TouchableOpacity>
-
-      <View style={styles.titleContainer}>
-        <Text style={styles.title}>Assistenza</Text>
-      </View>
-
-      <View style={styles.sectionContainer}>
-        <Text style={styles.sectionTitle}>COME POSSIAMO AIUTARTI?</Text>
-        <Text style={styles.subTitle}>Domande Frequenti</Text>
-        <Text style={styles.description}>Hai dubbi? Consulta le nostre FAQ</Text>
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Apri le FAQ</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.subTitle}>Tutorial</Text>
-        <Text style={styles.description}>Vuoi riguardare il tutorial iniziale?</Text>
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Apri il Tutorial</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.subTitle}>Scrivici</Text>
-        <Text style={styles.description}>Vuoi scriverci?</Text>
-        <Text style={styles.email}>email@email.it</Text>
-      </View>
-
-      <View style={styles.chatContainer}>
-        <Text style={styles.chatTitle}>Vuoi parlare con noi?</Text>
-        <TouchableOpacity style={styles.chatButton}>
-          <Text style={styles.buttonText}>Chat</Text>
-        </TouchableOpacity>
->>>>>>> 3f4512eb85b15625a2866a4f41becc3d80dff01c
       </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    
-    
-    backgroundColor:colors.primary,
-    
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    backgroundColor: 'white',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 40,
-  },
-  backButtonText: {
-    fontSize: 20,
-  },
-  titleContainer: {
-    marginTop: 10,
-    alignItems: 'center',
-    
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  sectionContainer: {
-    marginTop: 20,
-    padding: 20,
-   
-    borderRadius: 10,
-    backgroundColor: 'white',
-    widh: '100%',
-    alignItems: 'center',
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'space-evenly',
-    
-    
-    
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  subTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginTop: 10,
-    alignItems: 'center',
-    fontSize: 25,
-  },
-  description: {
-    fontSize: 14,
-    marginTop: 5,
-    alignItems: 'center',
-    fontSize: 15,
-  },
-  button: {
-    marginTop: 10,
-    borderRadius: 28,
-    backgroundColor: '#3CA2D7',
-    padding: 10,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 30,
-    paddingRight:20,
-    paddingLeft:20,
-    paddingTop:3,
-    paddingBottom:3,
-  },
-  email: {
-    color: 'blue',
-    marginTop: 5,
-    textAlign: 'center',
-  },
-  chatContainer: {
-    marginTop: 20,
-    borderRadius: 10,
-    backgroundColor: '#713CD7',
-    padding: 20,
-    alignItems: 'center',
-    display: "flex",
-    flexDirection: "row",
-    alignItems: 'center',
-    
-    
-  },
-  chatTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  chatButton: {
-    marginTop: 10,
-    borderRadius: 10,
-    backgroundColor: '#D73C55',
-    padding: 10,
-    alignItems: 'center',
-    
-  },
-});
 
 export default Help
 
