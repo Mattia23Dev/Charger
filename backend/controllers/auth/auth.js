@@ -205,7 +205,7 @@ module.exports.updateUser = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    return res.send("error : ", error.message);
+    return res.json("error : ", error.message);
   }
 };
 

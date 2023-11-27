@@ -21,6 +21,14 @@ const userSchema = mongoose.Schema({
     minuti: Number,
     inviti: Number,
     shareCode: {type: String, unique: true},
+    cards: [
+        {
+            cardNumber: String,
+            expirationDate: String,
+            cvv: String,
+            cardHolder: String,
+        }
+    ],
 },{timestamps: true})
 
 

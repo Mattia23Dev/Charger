@@ -41,27 +41,54 @@ function PaymentScreen({setVuolePagare, handleCrea, email}) {
     fetchClientSecret();
   }, []);
 
-  const handlePayment = async () => {
-    setPaymentInProgress(true);
+  const confirmPaymentBack = async (paymentMethodId) => {
+    console.log(paymentMethodId);
     try {
-      const { paymentMethodId } = await confirmPayment(clientSecret, {
-        type: 'CardField',
-        billingDetails: {
-          email: 'example@example.com',
+      const response = await fetch(network.serverip+'/confirm-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          paymentMethodId: paymentMethodId,
+          paymentIntentId: paymentIntentId,
+        }),
       });
 
-      // Esegui azioni supplementari dopo un pagamento riuscito
+      const result = await response.json();
+      console.log(result);
+
       setPaymentInProgress(false);
       setOk(true);
       setTimeout(() => {
         setVuolePagare(false);
         handleCrea();
-      }, 10000)
+      }, 2000)
+
+    } catch (error) {
+      console.log(error);
+      setPaymentInProgress(false);
+    }
+  }
+
+  const handlePayment = async () => {
+    setPaymentInProgress(true);
+    try {
+      const confirmPaymentResponse = await confirmPayment(clientSecret, {
+        paymentMethodType: 'Card',
+        billingDetails: {
+          email: email,
+        },
+      });
+
+      const paymentMethodId = confirmPaymentResponse.paymentIntent.paymentMethodId;;
+      console.log('paymentMethodId:', paymentMethodId);
+      confirmPaymentBack(paymentMethodId);
 
       console.log('Pagamento riuscito con il metodo:', paymentMethodId);
     } catch (error) {
       console.error('Errore nel pagamento:', error);
+      setPaymentInProgress(false);
     }
   };
 

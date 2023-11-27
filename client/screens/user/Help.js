@@ -1,9 +1,30 @@
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, Platform, Linking } from 'react-native'
 import { Ionicons } from "@expo/vector-icons";
 import React from 'react'
 import { colors } from '../../constants';
 
 const Help = ({navigation}) => {
+
+  const navigateOnboarding = () => {
+    navigation.navigate('onboarding')
+  };
+
+  const navigateFaq = () => {
+    navigation.navigate('faq')
+  }
+
+  const handleEmailPress = async () => {
+    const emailAddress = 'assistenza@nextacharge.com';
+
+    const mailtoUrl = `mailto:${emailAddress}`;
+
+    try {
+      await Linking.openURL(mailtoUrl);
+    } catch (error) {
+      console.error('Errore nell\'apertura dell\'app di posta:', error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.topContainer}>
@@ -44,7 +65,8 @@ const Help = ({navigation}) => {
                     marginLeft: 0,
                     flexDirection: 'row',
                     width: '90%'
-              }}>
+              }}
+              onPress={navigateFaq}>
                 <Ionicons
                 name="help-outline"
                 color={colors.light}
@@ -67,7 +89,9 @@ const Help = ({navigation}) => {
                     paddingHorizontal: 40,
                     flexDirection: 'row',
                     width: '90%'
-              }}>
+              }}
+              onPress={navigateOnboarding}
+              >
                 <Ionicons
                 name="star-outline"
                 color={colors.light}
@@ -89,7 +113,8 @@ const Help = ({navigation}) => {
                     paddingHorizontal: 30,
                     flexDirection: 'row',
                     width: '100%'
-              }}>
+              }}
+              onPress={handleEmailPress}>
               <Ionicons
                 name="mail-outline"
                 color={colors.light}

@@ -1,4 +1,5 @@
 const ordersModel = require("../../models/order");
+const User = require('../../models/user');
 const stripe = require('stripe')('sk_test_51N1TzKKy8OcUrFfrU2mW5nUC3kEBLccBV2974HaHTuylMHFCl7Lw8qBHtJ1ppXlimbFIZ9gSCM8izR2sbKVAJNFG00nytofunW');
 
 module.exports.createPayment = async (req, res) => {
@@ -24,6 +25,67 @@ module.exports.createPayment = async (req, res) => {
         console.error(error);
         res.json(error);
     }
+}
+
+module.exports.createPaymentAndSaveCard = async (req, res) => {
+    try {
+
+        const { email, model, tokenId } = req.body;
+        console.log(req.body);
+          
+          const customer = await stripe.customers.create({
+            email: email,
+            payment_method: tokenId,
+            invoice_settings: {
+              default_payment_method: tokenId,
+            },
+          });
+          
+          const paymentIntent = await stripe.paymentIntents.create({
+            amount: 10,
+            currency: 'eur',
+            customer: customer.id,
+            payment_method: tokenId,
+            confirmation_method: 'manual',
+            confirm: true,
+          });
+
+        if (paymentIntent.status === 'succeeded') {
+            const user = await User.findOne({ email: email });
+
+            user.cards.push({
+                cardNumber: model.cardNumber,
+                expirationDate: model.expiration,
+                cvv: model.cvv,
+                cardHolder: model.cardHolder,
+            });
+
+            await user.save();
+
+            res.json({ success: true, message: 'Carta salvata con successo' });
+        } else {
+            res.json({ success: false, message: 'Errore nel pagamento' });
+        }
+    } catch (error) {
+        console.error('Errore:', error);
+        res.status(500).json({ success: false, message: 'Errore interno del server' });
+    }
+};
+
+module.exports.confirmPayment = async (req, res) => {
+    const { paymentMethodId, paymentIntentId } = req.body;
+    console.log(paymentMethodId);
+    
+        try {
+            const paymentIntent = await stripe.paymentIntents.confirm(paymentIntentId, {
+                payment_method: paymentMethodId,
+            });
+    
+            res.json({ success: true, paymentIntent });
+        } catch (error) {
+            console.error(error);
+            res.json({ success: false, error: error.message });
+        }
 }
 
 module.exports.orders = async (req, res) => {

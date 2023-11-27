@@ -1,12 +1,9 @@
 const express = require('express')
 const app = express();
-const port = process.env.PORT;
 var bodyParser = require('body-parser');
 const dotenv = require('dotenv');
-const jwt = require('jsonwebtoken');
 var path = require('path');
 var cors = require('cors')
-const Tessera = require('./models/tessera');
 
 // To access public folder
 app.use(cors())
@@ -35,19 +32,16 @@ const upload = multer({ storage: storage })
 
 const { register, login, updateUser, deleteUser, userById, resetPassword, sendMailReset, verifyCode } = require("./controllers/auth/auth");
 const { addProduct, updateProduct, deleteProduct, getAllProducts } = require("./controllers/products/products")
-const { checkout, addToCart, cart, removeFromCart } = require("./controllers/user/cart")
+const { checkout } = require("./controllers/user/cart")
 const { isAdmin, checkAuth } = require("./controllers/middlewares/auth");
 const { dashboardData, getAllUsers } = require('./controllers/admin/dashboard');
 const { getAllOrders, changeStatusOfOrder } = require('./controllers/admin/orders');
-const { orders, createPayment } = require('./controllers/user/orders');
+const { orders, createPayment, createPaymentAndSaveCard, confirmPayment } = require('./controllers/user/orders');
 const { addCategory, getCategories, updateCategory, deleteCategory } = require('./controllers/categories/category');
 const { addToWishlist, wishlist, removeFromWishlist } = require('./controllers/user/wishlist');
 const {createTessera, getTessere, updateTessera, deleteTessera, createTesseraAdmuin} = require('./controllers/tessera/tessera');
-const tessera = require('./models/tessera');
-const { Console } = require('console');
 const { addPartecipazione } = require('./controllers/user/partecipazioni');
 const mongoose = require("./config/database")()
-
 
 app.get('/', (req, res) => {
   res.send('Servitori server!')
@@ -90,6 +84,8 @@ app.get("/delete-tessera", [isAdmin], deleteTessera)
 // ORDERS
 app.get("/orders",[checkAuth],orders)
 app.post("/create-payment", createPayment)
+app.post("/confirm-payment", confirmPayment)
+app.post("/create-payment-save-card", createPaymentAndSaveCard)
 
 // CHECKOUT
 app.post("/checkout",[checkAuth],checkout)

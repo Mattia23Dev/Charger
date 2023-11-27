@@ -1,27 +1,39 @@
 import { View, Text, TouchableOpacity, StyleSheet, Platform, UIManager, SafeAreaView, KeyboardAvoidingView, Alert } from 'react-native'
 import { Ionicons } from "@expo/vector-icons";
 import React, {useEffect, useRef, useState} from 'react'
-import { colors } from '../../constants';
+import { colors, network } from '../../constants';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FormProvider, useForm } from 'react-hook-form'
-import LottieView from 'lottie-react-native'
 import CreditCardForm, { Button, FormModel } from 'rn-credit-card'
+import { initStripe } from '@stripe/stripe-react-native';
+import { StripeSdk } from '@stripe/stripe-react-native';
+import { StripeCardParams, Stripe } from '@stripe/stripe-js';
+import LottieView from 'lottie-react-native';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
   }
 
+const publishableKey = 'pk_test_51N1TzKKy8OcUrFfrGTKEGh0HfSc8ZzobBjnfpmOsakeUgPwXTbzEWq0KfRvBsyhwpdll82kjjIdmRyItCFWR2k7H00zS0JO6Zt';
+
 const AddCard = ({navigation, route}) => {
-    //const { user } = route.params;
     const [user, setUser] = useState({});
-    const [cardNumber, setCardNumber] = useState("");
-    const [scadenza, setScadenza] = useState("");
-    const [cvv, setCvv] = useState("");
-    const [cardHolder, setCardHolder] = useState("");
+    const animation = useRef(null);
+    const [processing, setProcessing] = useState(false);
 
     const handleCreditCardChange = (formData) => {
         console.log(formData);
       };
+
+      useEffect(() => {
+        initStripe({
+          publishableKey: publishableKey,
+          merchantIdentifier: 'merchant.identifier',
+          urlScheme: "your-url-scheme",
+        });
+      }, []);
+
+      //const stripe = new Stripe(publishableKey);
 
       const formMethods = useForm({
         // to trigger the validation on the blur event
@@ -35,8 +47,36 @@ const AddCard = ({navigation, route}) => {
       });
       const { handleSubmit, formState } = formMethods;
 
-      function onSubmit(model) {
-        Alert.alert('Success: ' + JSON.stringify(model, null, 2));
+     async function onSubmit(model) {
+      setProcessing(true);
+      /*const cardParams = {
+        number: model.cardNumber,
+        expMonth: parseInt(model.expiration.split('/')[0], 10),
+        expYear: parseInt(model.expiration.split('/')[1], 10),
+        cvc: model.cvv,
+      };
+
+        const { token } = await stripe.createToken('card', cardParams);
+        const data = {
+          email: user.email,
+          model,
+          tokenId: token.id,
+        }
+        fetch(network.serverip+'/create-payment-save-card', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log(data);
+          Alert.alert('Success: ' + JSON.stringify(data, null, 2));
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });*/
       }
 
     useEffect(() => {
@@ -55,6 +95,20 @@ const AddCard = ({navigation, route}) => {
     
   return (
     <View style={styles.container}>
+      {processing && (
+        <View style={styles.popupShadow}>
+          <LottieView
+          autoPlay
+          ref={animation}
+          style={{
+            width: 200,
+            height: 200,
+            backgroundColor: 'rgba(0, 0, 0, 0)',
+          }}
+          source={require('./assets/loading.json')}
+        />
+      </View>
+      )}
       <View style={styles.topContainer}>
       <TouchableOpacity
         style={{
@@ -201,5 +255,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center'
-  }
+  },
+  popupShadow: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 15,
+  },
 })

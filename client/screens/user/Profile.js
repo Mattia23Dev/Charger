@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import React, {useEffect, useRef, useState} from 'react'
 import { colors } from '../../constants';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import LottieView from 'lottie-react-native';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -11,6 +12,8 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 const Profile = ({navigation, route}) => {
     //const { user } = route.params;
     const [user, setUser] = useState({});
+    const [processing, setProcessing] = useState(false);
+    const animation = useRef(null);
     const [nome, setNome] = useState(user?.name ? user.name : "");
     const [cognome, setCognome] = useState(user?.surname ? user.surname : "");
     const [email, setEmail] = useState(user?.email ? user.email : "");
@@ -58,6 +61,9 @@ const Profile = ({navigation, route}) => {
         setUser(user);
         navigation.setParams({ user: userData });
         AsyncStorage.setItem("authUser", JSON.stringify(user));
+        setTimeout(() => {
+          setProcessing(false);
+        }, 2000);
       } catch (error) {
         console.log(error);
       }
@@ -83,6 +89,7 @@ const Profile = ({navigation, route}) => {
 
       const updateAccount = () => {
 
+        setProcessing(true);
         const requestOptions = {
           method: 'POST',
           headers: {
@@ -103,13 +110,33 @@ const Profile = ({navigation, route}) => {
               _storeData(result.data);
             } else {
               console.log(result.data);
+              setTimeout(() => {
+                setProcessing(false);
+              }, 2000);
             }
           })
-          .catch((error) => console.log("error", error));
+          .catch((error) => {
+            console.log("error", error);
+            setProcessing(false);
+          });
       };   
     
   return (
     <View style={styles.container}>
+      {processing && (
+        <View style={styles.popupShadow}>
+          <LottieView
+          autoPlay
+          ref={animation}
+          style={{
+            width: 200,
+            height: 200,
+            backgroundColor: 'rgba(0, 0, 0, 0)',
+          }}
+          source={require('./assets/loading.json')}
+        />
+      </View>
+      )}
       <View style={styles.topContainer}>
       <TouchableOpacity
         style={{
@@ -308,5 +335,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center'
-  }
+  },
+  popupShadow: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 15,
+  },
 })

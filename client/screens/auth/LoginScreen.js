@@ -9,8 +9,8 @@ import {
   TouchableOpacity,
   Platform,
 } from "react-native";
-
-import React, { useState } from "react";
+import LottieView from 'lottie-react-native';
+import React, { useState, useRef } from "react";
 import { colors, network } from "../../constants";
 import CustomInput from "../../components/CustomInput";
 import header_logo from "../../assets/logo-serv.png";
@@ -25,6 +25,7 @@ const LoginScreen = ({ navigation }) => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isloading, setIsloading] = useState(false);
+  const animation = useRef(null);
 
   //method to store the authUser to aync storage
   _storeData = async (user) => {
@@ -89,17 +90,25 @@ const LoginScreen = ({ navigation }) => {
         ) {
           if (result?.data?.userType == "ADMIN") {
             //check the user type if the type is ADMIN then navigate to Dashboard else navigate to User Home
-            _storeData(result.data);
-            setIsloading(false);
-            navigation.replace("dashboard", { authUser: result.data }); // naviagte to Admin Dashboard
+            _storeData(result.data);    
+             // naviagte to Admin Dashboard
+            setTimeout(() => {
+              setIsloading(false);
+              navigation.replace("dashboard", { authUser: result.data });
+            }, 2000);
           } else {
             console.log(result.data);
             _storeData(result.data);
-            setIsloading(false);
-            navigation.replace("home", { user: result.data }); // naviagte to User Dashboard
+             // naviagte to User Dashboard
+            setTimeout(() => {
+              setIsloading(false);
+              navigation.replace("home", { user: result.data });
+            }, 2000);
           }
         } else {
-          setIsloading(false);
+          setTimeout(() => {
+            setIsloading(false);
+          }, 2000);
           return setError(result.message);
         }
       })
@@ -111,12 +120,25 @@ const LoginScreen = ({ navigation }) => {
 
   return (
     <InternetConnectionAlert onChange={(connectionState) => {}}>
+      {isloading && (
+        <View style={styles.popupShadow}>
+          <LottieView
+          autoPlay
+          ref={animation}
+          style={{
+            width: 200,
+            height: 200,
+            backgroundColor: 'transparent',
+          }}
+          source={require('../user/assets/loading.json')}
+        />
+      </View>
+      )}
       <KeyboardAvoidingView
         //behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.container}
       >
         <ScrollView style={{ flex: 1, width: "100%" }}>
-          <ProgressDialog visible={isloading} label={"Login ..."} />
           <StatusBar></StatusBar>
           <View style={styles.welconeContainer}>
             <View>
@@ -270,5 +292,18 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontWeight: "800",
     color: colors.light,
+  },
+  popupShadow: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 15,
   },
 });
