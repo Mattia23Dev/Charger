@@ -41,7 +41,6 @@ exports.sendPromoCode = async (req, res) => {
       // Aggiungi 15 minuti all'utente con il promo code
       existingShareCode.minutes += 15;
   
-      // Aggiungi il promo code all'array friendCode dell'utente corrente
       user.friendCode.push(promoCode);
   
       await user.save();
@@ -51,6 +50,7 @@ exports.sendPromoCode = async (req, res) => {
         success: true,
         status: 200,
         message: 'Minuti aggiunti correttamente',
+        updatedUser: user,
       });
     } catch (error) {
       console.error(error);

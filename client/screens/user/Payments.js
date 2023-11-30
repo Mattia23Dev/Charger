@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Share, Animated, ActivityIndicator } from 'react-native'
 import { Ionicons } from "@expo/vector-icons";
 import React, { useRef, useState } from 'react'
-import { colors } from '../../constants';
+import { colors, network } from '../../constants';
 import { PanGestureHandler, State, GestureHandlerRootView, TextInput  } from 'react-native-gesture-handler';
 
 const Payments = ({navigation, route}) => {
@@ -43,6 +43,21 @@ const Payments = ({navigation, route}) => {
     const [promoCodePopup, setPromoCodePopup] = useState(false);
     const [loading, setLoading] = useState(false);
 
+    
+    _storeData = async (user) => {
+      try {
+        console.log('Updating user data:', user);
+        setUser(user);
+        navigation.setParams({ user: userData });
+        AsyncStorage.setItem("authUser", JSON.stringify(user));
+        setTimeout(() => {
+          setLoading(false);
+        }, 2000);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
 
   return (
     <GestureHandlerRootView> 
@@ -50,7 +65,7 @@ const Payments = ({navigation, route}) => {
             {promoCodePopup && (
               <View style={styles.popupShadow}>
                 <PromoPopup 
-                setPopupPromo={setPromoCodePopup} setLoading={setLoading} />
+                setPopupPromo={setPromoCodePopup} setLoading={setLoading} user={user} _storeData={_storeData} />
               </View>
             )}  
             {loading && (
@@ -224,13 +239,36 @@ const Payments = ({navigation, route}) => {
 
 export default Payments
 
-const PromoPopup = ({setPopupPromo, setLoading}) => {
+const PromoPopup = ({setPopupPromo, setLoading, user}) => {
 
   const [promoCode, setPromoCode] = useState("");
 
-  const handleSendPromo = () => {
+  const handleSendPromo = async () => {
     setLoading(true);
-    //setPopupPromo(false)
+      try {
+        const response = await fetch(network.serverip+'/send-promocode', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            promoCode: promoCode,
+            id: user._id,
+          }),
+        });
+    
+        if (!response.ok) {
+          const data = await response.json();
+          console.error('Errore:', data.message);
+        } else {
+          const data = await response.json();
+          console.log('Risposta:', data);
+          _storeData(data.updatedUser);
+          setLoading(true);
+        }
+      } catch (error) {
+        console.error('Errore nella richiesta:', error.message);
+      }
   }
 
   return (
