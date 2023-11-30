@@ -390,10 +390,11 @@ export default function Home({navigation, route}) {
               alignItems: 'center', 
               marginBottom: 20, 
               borderWidth: 1.2, 
-              borderColor: '#c2c2c1',
+              borderColor: colors.dark,
+              backgroundColor: colors.dark,
               marginTop: 25,
               marginRight: 20,}}>
-                <Ionicons name="menu" size={28} color={colors.orange} />
+                <Ionicons name="menu" size={28} color={colors.green} />
             </View>
 
           </TouchableOpacity>
@@ -402,7 +403,7 @@ export default function Home({navigation, route}) {
                   width: '58%',
                   paddingHorizontal: 15,
                   paddingVertical: 15,
-                  backgroundColor: 'white',  // Aggiungi un colore di sfondo
+                  backgroundColor: colors.dark,  // Aggiungi un colore di sfondo
                   shadowColor: colors.light_black,
                   elevation: 10,
                   shadowOffset: { width: 0, height: 2 }, // Aggiorna la shadowOffset
@@ -414,9 +415,9 @@ export default function Home({navigation, route}) {
                   justifyContent: 'flex-start',
                 }}
               >
-                <Ionicons name='search' color={colors.dark} size={20} />
+                <Ionicons name='search' color={colors.green} size={20} />
                 <TextInput
-                style={{marginLeft: 6, fontSize: 17, fontWeight: 600, color: colors.dark}}
+                style={{marginLeft: 6, fontSize: 17, fontWeight: 600, color: colors.green}}
                 placeholder="Cerca posizione"
                 value={filterText}
                 onChangeText={handleInputChange}
@@ -433,11 +434,12 @@ export default function Home({navigation, route}) {
                   alignItems: 'center', 
                   marginBottom: 20, 
                   borderWidth: 1.2, 
-                  borderColor: '#c2c2c1',
+                  borderColor: colors.dark,
+                  backgroundColor: colors.dark,
                   marginTop: 25,
                   marginLeft: 20,
                 }}>
-                    <Icon name="filter" size={20} color="black" /> 
+                    <Ionicons name="filter" size={20} color={colors.green} /> 
                 </View>
               </TouchableOpacity>
 
@@ -509,7 +511,7 @@ export default function Home({navigation, route}) {
                         <View style={{
                           width: '60%'
                         }}>
-                          <Text style={{color: 'black', fontWeight: 700}}>{selectedStationId?.title}</Text>
+                          <Text style={{color: colors.dark, fontWeight: 700}}>{selectedStationId?.title}</Text>
                           <View style={{
                             backgroundColor: selectedStationId.status == 'offline' ? '#999999' : selectedStationId.numberPowerBank > 0 ? '#00C213' : '#B50000',
                             paddingVertical: 3,
@@ -520,33 +522,36 @@ export default function Home({navigation, route}) {
                             borderRadius: 20,
                           }}>
                             <Text style={{
-                              color: colors.light,
+                              color: selectedStationId.status == 'offline' ? colors.light : colors.dark,
                               textAlign: 'center',
                               }}>{selectedStationId?.status}</Text>
                           </View>
 
-                          <Text style={{color: colors.light_black, fontSize: 12,}}>{selectedStationId?.address}</Text>
+                          <Text style={{color: colors.muted, fontSize: 12,}}>{selectedStationId?.address}</Text>
                         </View>
                       </TouchableOpacity>  
                     )}
-
-                    <TouchableOpacity style={styles.scanButton} onPress={handleScanButtonPress}>
-                        <Ionicons name="qr-code" size={30} color={!isScanning ? 'white' : 'green'} />
-                    </TouchableOpacity>
+                    <View style={styles.scanContainerbutton}>
                     <TouchableOpacity style={{
-                      backgroundColor: colors.dark,
-                      width: 50,
-                      height: 50,
-                      borderRadius: 50,
-                      zIndex: 10,
-                      display: 'flex',
-                      flexDirection: 'row',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      marginLeft: 20,
-                    }}>
-                      <Ionicons size={30} name='location' color={"#74F680"} />
-                    </TouchableOpacity>
+                        backgroundColor: colors.dark,
+                        width: 50,
+                        height: 50,
+                        borderRadius: 50,
+                        zIndex: 10,
+                        display: 'flex',
+                        flexDirection: 'row',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        position: 'absolute',
+                        right: 20,
+                      }}>
+                        <Ionicons size={25} name='location' color={"#74F680"} />
+                      </TouchableOpacity>  
+                      <TouchableOpacity style={styles.scanButton} onPress={handleScanButtonPress}>
+                          <Ionicons name="qr-code" size={30} color={!isScanning ? colors.green : 'green'} />
+                      </TouchableOpacity>                    
+                    </View>
+
                 </View>
             </View>
           </View>
@@ -737,12 +742,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: colors.orange,
+    backgroundColor: colors.dark,
     borderRadius: 30,
     width: "50%",
     height: 50,
     elevation: 10,
-    shadowColor: 'gray',
+    shadowColor: colors.dark,
     shadowOffset: 1,
     shadowOpacity: 1,
   },
@@ -751,7 +756,15 @@ const styles = StyleSheet.create({
     bottom: 80,
     width: '100%',
     justifyContent: 'center',
-    paddingLeft: 35,
+    //paddingLeft: 35,
+    alignItems: 'center',
+    flexDirection: 'column',
+  },
+  scanContainerbutton: {
+    position: 'relative',
+    width: '100%',
+    justifyContent: 'center',
+    //paddingLeft: 35,
     alignItems: 'center',
     flexDirection: 'row',
   },

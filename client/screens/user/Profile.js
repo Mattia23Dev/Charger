@@ -4,6 +4,7 @@ import React, {useEffect, useRef, useState} from 'react'
 import { colors } from '../../constants';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import LottieView from 'lottie-react-native';
+import { ActivityIndicator } from 'react-native';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -125,17 +126,8 @@ const Profile = ({navigation, route}) => {
     <View style={styles.container}>
       {processing && (
         <View style={styles.popupShadow}>
-          <LottieView
-          autoPlay
-          ref={animation}
-          style={{
-            width: 200,
-            height: 200,
-            backgroundColor: 'rgba(0, 0, 0, 0)',
-          }}
-          source={require('./assets/loading.json')}
-        />
-      </View>
+            <ActivityIndicator size="large" color={colors.green} />
+        </View>
       )}
       <View style={styles.topContainer}>
       <TouchableOpacity
@@ -256,7 +248,7 @@ const Profile = ({navigation, route}) => {
                 style={styles.bottomBody}
                 >
             <Text
-                    style={{fontSize: 20, marginHorizontal: 5, color: '#fff'}}>
+                    style={{fontSize: 20, marginHorizontal: 5, color: colors.green}}>
                         Salva
             </Text>
         </TouchableOpacity>
@@ -319,12 +311,12 @@ const styles = StyleSheet.create({
   },
   input: {
     width: '85%',
-    backgroundColor: '#ababab',
+    backgroundColor: colors.dark,
     marginTop: 8,
     paddingVertical: 17,
     paddingHorizontal: 15,
     borderRadius: 10,
-    color: '#fff'
+    color: colors.light
   },
   bottomBody: {
     width: '90%',

@@ -17,9 +17,9 @@ const userSchema = mongoose.Schema({
     pIva: String,
     cf: String,
     sdi: String,
-    noleggi: Number,
-    minuti: Number,
-    inviti: Number,
+    noleggi: {type: Number, default: 0},
+    minuti: {type: Number, default: 0},
+    inviti: {type: Number, default: 0},
     shareCode: {type: String, unique: true},
     cards: [
         {
@@ -29,6 +29,7 @@ const userSchema = mongoose.Schema({
             cardHolder: String,
         }
     ],
+    friendCode : [String],
 },{timestamps: true})
 
 

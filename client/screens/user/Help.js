@@ -69,9 +69,9 @@ const Help = ({navigation}) => {
               onPress={navigateFaq}>
                 <Ionicons
                 name="help-outline"
-                color={colors.light}
+                color={colors.green}
                 size={25}/>
-                <Text style={{color: colors.light, fontWeight: 500, marginLeft: 4, fontSize: 18, textAlign: 'center'}}>Apri le FAQ</Text>
+                <Text style={{color: colors.green, fontWeight: 500, marginLeft: 4, fontSize: 18, textAlign: 'center'}}>Apri le FAQ</Text>
               </TouchableOpacity>
             </View>
             <View style={styles.faq}>
@@ -94,9 +94,9 @@ const Help = ({navigation}) => {
               >
                 <Ionicons
                 name="star-outline"
-                color={colors.light}
+                color={colors.green}
                 size={25}/>
-                <Text style={{color: colors.light, fontWeight: 500, marginLeft: 4, fontSize: 18, textAlign: 'center'}}>Apri il tutorial</Text>
+                <Text style={{color: colors.green, fontWeight: 500, marginLeft: 4, fontSize: 18, textAlign: 'center'}}>Apri il tutorial</Text>
               </TouchableOpacity>
             </View>
             <View style={styles.faq}>
@@ -117,9 +117,9 @@ const Help = ({navigation}) => {
               onPress={handleEmailPress}>
               <Ionicons
                 name="mail-outline"
-                color={colors.light}
+                color={colors.green}
                 size={25}/>
-                <Text style={{color: colors.light, fontWeight: 500, marginLeft: 4, fontSize: 18}}>assistenza@nextacharge.com</Text>
+                <Text style={{color: colors.green, fontWeight: 500, marginLeft: 4, fontSize: 18}}>assistenza@nextacharge.com</Text>
               </TouchableOpacity>
             </View>
       </View>

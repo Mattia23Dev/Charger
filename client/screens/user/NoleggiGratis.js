@@ -11,8 +11,8 @@ const NoleggiGratis = ({navigation, route}) => {
         try {
           const options = {
             title: 'Condividi con',
-            message: 'Ciao, hai il telefono scarico? con noi non più.',
-            url: "",
+            message: 'Iscriviti e inserisci il codice ' + user?.shareCode + ' per ottenere 15 minuti di ricarica gratis.',
+            url: "https.mattianoris.com",
           };
           await Share.share(options);
         } catch (error) {
@@ -43,9 +43,9 @@ const NoleggiGratis = ({navigation, route}) => {
       </View>
       <View style={styles.bodyContainer}>
             <LinearGradient 
-            colors={[colors.light, colors.orange]}
-            start={{ x: 0.05, y: 0.05 }}
-            end={{ x: 1, y: 1 }}
+            colors={[colors.green, colors.orange]}
+            start={{ x: -0.5, y: -0.5 }}
+            end={{ x: 1.3, y: 1.3 }}
             locations={[0, 0.5]}
             style={{
                 display: 'flex',
@@ -65,8 +65,8 @@ const NoleggiGratis = ({navigation, route}) => {
                 backgroundImage: colors.gradient,
                 marginTop: -60,
               }}>
-                <Text style={{color: colors.light, fontWeight: 500, fontSize: 68, textAlign: 'center'}}>{user?.minutiGrats ? user.minutiGrats : 0}</Text>
-                <Text style={{color: colors.light, fontWeight: 400, fontSize: 20, textAlign: 'center'}}>minuti</Text>
+                <Text style={{color: colors.green, fontWeight: 500, fontSize: 68, textAlign: 'center'}}>{user?.minutiGrats ? user.minutiGrats : 0}</Text>
+                <Text style={{color: colors.green, fontWeight: 400, fontSize: 20, textAlign: 'center'}}>minuti</Text>
             </LinearGradient>
             <View style={{
                     borderRadius: 30,
@@ -119,7 +119,7 @@ const NoleggiGratis = ({navigation, route}) => {
               </TouchableOpacity>
             </View>
             <View style={styles.bottomBody}>
-                <Text style={{width: '45%', color: '#fff', fontSize: 16}}>Invita gli amici e ottieni 60 minuti di credito</Text>
+                <Text style={{width: '45%', color: colors.green, fontSize: 16}}>Invita gli amici e ottieni 60 minuti di credito</Text>
                 <TouchableOpacity
                 onPress={shareContent}
                 style={{

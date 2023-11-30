@@ -1,8 +1,8 @@
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Share, Animated } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Share, Animated, ActivityIndicator } from 'react-native'
 import { Ionicons } from "@expo/vector-icons";
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { colors } from '../../constants';
-import { PanGestureHandler, State, GestureHandlerRootView  } from 'react-native-gesture-handler';
+import { PanGestureHandler, State, GestureHandlerRootView, TextInput  } from 'react-native-gesture-handler';
 
 const Payments = ({navigation, route}) => {
     const { user } = route.params;
@@ -11,8 +11,8 @@ const Payments = ({navigation, route}) => {
         try {
           const options = {
             title: 'Condividi con',
-            message: 'Ciao, hai il telefono scarico? con noi non più.',
-            url: "",
+            message: 'Iscriviti e inserisci il codice ' + user?.shareCode + ' per ottenere 15 minuti di ricarica gratis.',
+            url: "https.mattianoris.com",
           };
           await Share.share(options);
         } catch (error) {
@@ -40,10 +40,24 @@ const Payments = ({navigation, route}) => {
       navigation.navigate("addcard");
     }
 
+    const [promoCodePopup, setPromoCodePopup] = useState(false);
+    const [loading, setLoading] = useState(false);
+
 
   return (
     <GestureHandlerRootView> 
     <View style={styles.container}>
+            {promoCodePopup && (
+              <View style={styles.popupShadow}>
+                <PromoPopup 
+                setPopupPromo={setPromoCodePopup} setLoading={setLoading} />
+              </View>
+            )}  
+            {loading && (
+              <View style={styles.popupShadow}>
+                <ActivityIndicator size="large" color={colors.green} />
+              </View>  
+            )}
       <View style={styles.topContainer}>
       <TouchableOpacity
         style={{
@@ -140,7 +154,8 @@ const Payments = ({navigation, route}) => {
                     paddingHorizontal: 30,
                     flexDirection: 'row',
                     width: '90%'
-              }}>
+              }}
+              onPress={() => setPromoCodePopup(true)}>
                 <Ionicons
                 name="add-outline"
                 color={colors.orange}
@@ -175,7 +190,7 @@ const Payments = ({navigation, route}) => {
                 </Animated.View>
             </PanGestureHandler>
             <View style={styles.bottomBody}>
-                <Text style={{width: '45%', color: '#fff', fontSize: 16}}>Invita gli amici e ottieni 60 minuti di credito</Text>
+                <Text style={{width: '45%', color: colors.green, fontSize: 16}}>Invita gli amici e ottieni 60 minuti di credito</Text>
                 <TouchableOpacity
                 onPress={shareContent}
                 style={{
@@ -209,7 +224,80 @@ const Payments = ({navigation, route}) => {
 
 export default Payments
 
+const PromoPopup = ({setPopupPromo, setLoading}) => {
+
+  const [promoCode, setPromoCode] = useState("");
+
+  const handleSendPromo = () => {
+    setLoading(true);
+    //setPopupPromo(false)
+  }
+
+  return (
+    <View style={styles.popupFilter}>
+      <View style={styles.topPopup}>
+        <TouchableOpacity style={{
+          backgroundColor: colors.light,
+          width: 25,
+          height: 25,
+          borderRadius: 50,
+          justifyContent: 'center',
+          alignItems: 'center',
+          position: 'absolute',
+          left: 15,
+          top: 20,
+        }} 
+        onPress={() => setPopupPromo(false)}>
+          <Ionicons name='close' size={20} color={colors.dark} />
+        </TouchableOpacity>
+        <Text style={{color: colors.light, fontSize: 22, fontWeight: 600,}}>Inserisci il coupon</Text>
+      </View>
+      <View style={styles.bodyFilter}>
+        <View style={styles.filterItem}>
+          <TextInput
+            style={styles.input}
+            value={promoCode}
+            onChangeText={(text) => setPromoCode(text)}
+          />
+        </View>
+      </View>
+      <View style={{
+        justifyContent: 'center',
+        width: '100%',
+        alignItems:'center',
+        display: 'flex'
+      }}>
+        <TouchableOpacity style={{
+          marginTop: 20,
+          width: '90%',
+          backgroundColor: colors.orange,
+          borderRadius: 30,
+          paddingVertical: 18,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+        onPress={handleSendPromo}>
+          <Text style={{color: colors.light, fontWeight: 500, fontSize: 18}}>CONFERMA</Text>
+        </TouchableOpacity>        
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  popupShadow: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 20,
+  },
   container: {
     backgroundColor: colors.dark,
     width: '100%',
@@ -285,5 +373,56 @@ const styles = StyleSheet.create({
     zIndex: 10,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-  }
+  },
+  popupFilter: {
+    backgroundColor: 'white', // Colore di sfondo del popup
+    padding: 0,
+    paddingBottom: 20,
+    borderRadius: 10,
+    elevation: 5, // Ombra su Android
+    shadowColor: 'black', // Ombra su iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    width: '80%',
+  },
+  topPopup: {
+    width: '100%',
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    backgroundColor: colors.dark,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    paddingVertical: 20,
+    position: 'relative',
+  },
+  bodyFilter: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  filterItem: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '90%',
+    paddingVertical: 10,
+  },
+  input: {
+    width: '100%',
+    backgroundColor: colors.light,
+    borderColor: colors.dark,
+    borderWidth: 1.2,
+    borderStyle: 'dashed',
+    marginTop: 8,
+    paddingVertical: 15,
+    paddingHorizontal: 15,
+    borderRadius: 30,
+    color: colors.dark,
+    fontFamily: 'poppins_500',
+    fontSize: 16
+  },
 })

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet, Platform, UIManager, SafeAreaView, KeyboardAvoidingView, Alert } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, Platform, UIManager, SafeAreaView, KeyboardAvoidingView, Alert, ActivityIndicator } from 'react-native'
 import { Ionicons } from "@expo/vector-icons";
 import React, {useEffect, useRef, useState} from 'react'
 import { colors, network } from '../../constants';
@@ -107,17 +107,8 @@ const AddCard = ({navigation, route}) => {
     <View style={styles.container}>
       {processing && (
         <View style={styles.popupShadow}>
-          <LottieView
-          autoPlay
-          ref={animation}
-          style={{
-            width: 200,
-            height: 200,
-            backgroundColor: 'rgba(0, 0, 0, 0)',
-          }}
-          source={require('./assets/loading.json')}
-        />
-      </View>
+            <ActivityIndicator size="large" color={colors.green} />
+        </View>
       )}
       <View style={styles.topContainer}>
       <TouchableOpacity

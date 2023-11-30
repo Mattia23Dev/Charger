@@ -41,6 +41,7 @@ const { addCategory, getCategories, updateCategory, deleteCategory } = require('
 const { addToWishlist, wishlist, removeFromWishlist } = require('./controllers/user/wishlist');
 const {createTessera, getTessere, updateTessera, deleteTessera, createTesseraAdmuin} = require('./controllers/tessera/tessera');
 const { addPartecipazione } = require('./controllers/user/partecipazioni');
+const { sendPromoCode } = require('./controllers/promo/promocode');
 const mongoose = require("./config/database")()
 
 app.get('/', (req, res) => {
@@ -100,6 +101,9 @@ app.get("/dashboard",[isAdmin],dashboardData)
 app.get("/admin/orders",[isAdmin],getAllOrders)
 app.get("/admin/order-status",[isAdmin],changeStatusOfOrder)
 app.get("/admin/users",[isAdmin],getAllUsers)
+
+//SHARE CODE
+app.post("send-promocode", sendPromoCode);
 
 // PARTECIPAZIONE 
 app.post("/add-part", addPartecipazione)

@@ -24,41 +24,41 @@ const Prices = ({navigation}) => {
           />
         </TouchableOpacity>
         <Text style={{ fontSize: 22, textAlign: 'center', color: '#fff', fontWeight: 500, marginTop: 30, }}>Tariffe</Text>
-        <Text style={{ fontSize: 34, textAlign: 'center', color: '#fff', fontWeight: 500, marginTop: 4, }}>€1,00 / ora</Text>
+        <Text style={{ fontSize: 34, textAlign: 'center', color: colors.green, fontWeight: 500, marginTop: 4, }}>€1,00 / ora</Text>
       </View>
       <View style={styles.bodyContainer}>
             <Text style={styles.textStyle}>
                 Dettagli
             </Text>
             <View style={styles.tariffe}>
-                <View style={styles.tariffaLeft}>
-                    <Text style={{color: '#fff', fontSize: 22, fontWeight: 500,}}>Giorno 1</Text>
-                    <Text style={{textAlign: 'center', color: colors.light, fontSize: 16}}>(0-24h)</Text>
-                </View>
                 <View style={styles.tariffaRight}>
-                    <Text style={{fontSize: 24, color: colors.muted}}>€ 1,00 / ora</Text>
-                    <Text style={{fontSize: 16, color: colors.muted, marginTop: 5}}>Massimo € 8,00</Text>
+                    <Text style={{fontSize: 24, color: colors.muted}}>Giorno 1 </Text>
+                    <Text style={{fontSize: 15, color: colors.muted, marginTop: 5}}>(0-24h)</Text>
+                </View> 
+                <View style={styles.tariffaLeft}>
+                    <Text style={{color: colors.green, fontSize: 22, fontWeight: 500,}}>0,015€ / Minuto</Text>
+                    <Text style={{textAlign: 'center', color: colors.muted, fontSize: 15}}>Massimo € 8,00</Text>
+                </View>   
+            </View>
+            <View style={styles.tariffe}>
+                <View style={styles.tariffaRight}>
+                    <Text style={{color: colors.muted, fontSize: 22}}>Giorno 2</Text>
+                    <Text style={{textAlign: 'center', color: colors.muted, fontSize: 15}}>(0-24h)</Text>
+                </View>
+                <View style={styles.tariffaLeft}>
+                    <Text style={{fontSize: 22, color: colors.green, fontWeight: 500,}}>0,012€ / Minuto</Text>
+                    <Text style={{fontSize: 15, color: colors.muted, marginTop: 0, textAlign:'center'}}>Massimo € 8,00</Text>
                 </View>    
             </View>
             <View style={styles.tariffe}>
-                <View style={styles.tariffaLeft}>
-                    <Text style={{color: '#fff', fontSize: 22, fontWeight: 500,}}>Giorno 2</Text>
-                    <Text style={{textAlign: 'center', color: colors.light, fontSize: 16}}>(0-24h)</Text>
-                </View>
                 <View style={styles.tariffaRight}>
-                    <Text style={{fontSize: 24, color: colors.muted}}>€ 1,00 / ora</Text>
-                    <Text style={{fontSize: 16, color: colors.muted, marginTop: 5}}>Massimo € 8,00</Text>
-                </View>    
-            </View>
-            <View style={styles.tariffe}>
-                <View style={styles.tariffaLeft}>
-                    <Text style={{color: '#fff', fontSize: 22, fontWeight: 500,}}>Giorno 3</Text>
-                    <Text style={{textAlign: 'center', color: colors.light, fontSize: 16}}>(0-24h)</Text>
+                    <Text style={{color: colors.muted, fontSize: 22, fontWeight: 500,}}>Giorno 3</Text>
+                    <Text style={{textAlign: 'center', color: colors.muted, fontSize: 15}}>(0-24h)</Text>
                 </View>
-                <View style={styles.tariffaRight}>
-                    <Text style={{fontSize: 24, color: colors.muted}}>€ 1,00 / ora</Text>
-                    <Text style={{fontSize: 16, color: colors.muted, marginTop: 5}}>Massimo € 8,00</Text>
-                </View>    
+                <View style={styles.tariffaLeft}>
+                    <Text style={{fontSize: 22, color: colors.green, fontWeight: 500,}}>0,012€ / Minuto</Text>
+                    <Text style={{fontSize: 15, color: colors.muted, marginTop: 0, textAlign:'center'}}>Massimo € 8,00</Text>
+                </View>  
             </View>
             <View style={styles.bottomBody}>
                 <Text style={{width: '45%', color: '#fff', fontSize: 16}}>Vuoi ricevere sconti e offerte promozionali?</Text>
@@ -151,7 +151,8 @@ const styles = StyleSheet.create({
   },
   tariffaRight: {
     flexDirection: 'column',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   bottomBody: {
     width: '90%',

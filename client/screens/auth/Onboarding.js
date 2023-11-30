@@ -113,7 +113,7 @@ const OnboardingStart = ({navigation}) => {
               style={[
                 styles.indicator,
                 currentSlideIndex == index && {
-                  backgroundColor: COLORS.white,
+                  backgroundColor: colors.green,
                   width: 25,
                 },
               ]}
@@ -201,13 +201,15 @@ const styles = StyleSheet.create({
     maxWidth: '70%',
     textAlign: 'center',
     lineHeight: 23,
+    fontFamily: 'poppins_500'
   },
   title: {
-    color: COLORS.white,
+    color: colors.green,
     fontSize: 22,
-    fontWeight: 'bold',
+    fontFamily: 'poppins_600',
     marginTop: 20,
     textAlign: 'center',
+    width: '95%',
   },
   image: {
     height: '100%',

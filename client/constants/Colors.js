@@ -17,4 +17,5 @@ export default colors = {
   dark: "#343A3F",
   muted: "#707981",
   white: "#FFFFFF",
+  green: "#74F680",
 };

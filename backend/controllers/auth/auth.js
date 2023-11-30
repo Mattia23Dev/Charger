@@ -18,6 +18,18 @@ function generateTempCode() {
   return code;
 }
 
+const generateUniqueCode = () => {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let uniqueCode = '';
+
+  for (let i = 0; i < 8; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    uniqueCode += characters.charAt(randomIndex);
+  }
+
+  return uniqueCode;
+};
+
 function generateAuthToken(data){
   const token = jwt.sign(data, JWT_SECRET_KEY, { expiresIn: '365d' })
   return token
@@ -168,6 +180,7 @@ module.exports.register = async (req, res) => {
       });
     }
     req.body.password = await bcrypt.hash(password, 10);
+    req.body.shareCode = generateUniqueCode();
 
     const user = new User(req.body);
     await user.save();
