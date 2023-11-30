@@ -1,6 +1,6 @@
 export default colors = {
-  primary: "#D7713C",  //#D7713C //#fa681b
-  orange: '#fa681b',
+  primary: "#D7713C",  //#48BDD7 blu  // #D7713C arancio // #74F680 verde
+  orange: '#343A3F',
   primary_light: "#FFC8B2",
   light_black: "#161616",
   gradient: "background: radial-gradient(circle, rgba(250,104,27,1) 52%, rgba(254,216,196,1) 82%)",

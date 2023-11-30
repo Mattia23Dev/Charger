@@ -9,6 +9,7 @@ import { initStripe } from '@stripe/stripe-react-native';
 import { StripeSdk } from '@stripe/stripe-react-native';
 import { StripeCardParams, Stripe } from '@stripe/stripe-js';
 import LottieView from 'lottie-react-native';
+import animationLoad from './assets/loading.json';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -31,6 +32,7 @@ const AddCard = ({navigation, route}) => {
           merchantIdentifier: 'merchant.identifier',
           urlScheme: "your-url-scheme",
         });
+
       }, []);
 
       //const stripe = new Stripe(publishableKey);
@@ -47,8 +49,15 @@ const AddCard = ({navigation, route}) => {
       });
       const { handleSubmit, formState } = formMethods;
 
-     async function onSubmit(model) {
+      const closeanimation = () => {
+        setTimeout(() => {
+          setProcessing(false);
+        }, 3000);
+      }
+
+     const onSubmit = async (model) => {
       setProcessing(true);
+      console.log('ok')
       /*const cardParams = {
         number: model.cardNumber,
         expMonth: parseInt(model.expiration.split('/')[0], 10),
@@ -77,6 +86,7 @@ const AddCard = ({navigation, route}) => {
         .catch(error => {
           console.error('Error:', error);
         });*/
+        closeanimation();
       }
 
     useEffect(() => {
@@ -153,13 +163,11 @@ const AddCard = ({navigation, route}) => {
                 Aggiungendo questa carta autorizzo NextaCharge a inviare istruzioni all'istituto emittente per processare
                 i pagamenti in accordo con i termini e condizioni generali in essere con NextaCharge.
             </Text>
-            {formState.isValid && (
             <Button
                 style={styles.bottomButton}
                 title={'AGGIUNGI CARTA'}
                 onPress={handleSubmit(onSubmit)}
-            />
-            )}            
+            />           
         </View>
 
         </SafeAreaView>
@@ -197,7 +205,7 @@ const styles = StyleSheet.create({
     position: 'fixed',
     bottom: 0,
     top: 60,
-    zIndex: 10,
+    zIndex: 0,
     justifyContent: 'flex-start',
     flexDirection: 'column',
     alignItems: 'center',
@@ -267,6 +275,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 15,
+    zIndex: 5,
   },
 })

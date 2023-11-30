@@ -7,9 +7,9 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/servitori-splash-screen.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#161616"
+      "image": "./assets/charger-splash-screen.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#343A3F"
     },
     "updates": {
       "enabled": true,

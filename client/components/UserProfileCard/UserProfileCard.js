@@ -47,6 +47,6 @@ const styles = StyleSheet.create({
   secondaryText: {
     fontWeight: "600",
     fontSize: 46,
-    color: colors.light
+    color: "#74F680"
   },
 });

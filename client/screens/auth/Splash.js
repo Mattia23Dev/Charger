@@ -1,14 +1,27 @@
 import { StyleSheet, Image, View } from "react-native";
 import React, { useEffect } from "react";
 import { colors } from "../../constants";
-import logo from "../../assets/servitori-splash-screen.png";
+import logo from "../../assets/charger-splash-screen.png";
+import * as Font from 'expo-font';
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Splash = ({ navigation }) => {
+
+  const fetchFonts = () => {
+    return Font.loadAsync({
+      RobotoMono_700Bold: require('../../constants/font/Roboto_Mono/RobotoMono-VariableFont_wght.ttf'),
+      RobotoMono_400Regular: require('../../constants/font/Roboto_Mono/RobotoMono-Italic-VariableFont_wght.ttf'),
+      poppins_400: require('../../constants/font/Poppins/Poppins-Thin.ttf'),
+      poppins_500: require('../../constants/font/Poppins/Poppins-Regular.ttf'),
+      poppins_600: require('../../constants/font/Poppins/Poppins-SemiBold.ttf')
+    });
+  };
+
   //method to fetch the authUser data from aync storage if there is any and login the Dashboard or Home Screen according to the user type
   _retrieveData = async () => {
     try {
+      await fetchFonts()
       const value = await AsyncStorage.getItem("authUser");
       if (value !== null) {
         let user = JSON.parse(value); // covert the authUser value to json
@@ -58,7 +71,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   logo: {
-    resizeMode: "contain",
+    resizeMode: "cover",
     width: '100%',
     height: '100%',
   },

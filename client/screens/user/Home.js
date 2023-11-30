@@ -9,7 +9,7 @@ import close from './assets/close.png';
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from '../../constants';
 import UserProfileCard from '../../components/UserProfileCard/UserProfileCard';
-import logo from '../../assets/servitori-logo2.png'
+import logo from '../../assets/charger-logo.png'
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BarCodeScanner } from 'expo-barcode-scanner';
 
@@ -189,7 +189,7 @@ export default function Home({navigation, route}) {
     {
       elementType: 'all',
       stylers: [
-        { saturation: -30 }, 
+        { saturation: -80 }, 
       ],
     },
   ];
@@ -249,7 +249,7 @@ export default function Home({navigation, route}) {
     <ScrollView style={{width: '70%'}}>
       <View style={{ justifyContent: 'flex-start', padding: 15, width: '100%' }}>
       <TouchableOpacity 
-        style={{padding: 1, borderRadius: 50, width: 42, height: 42, justifyContent: 'center', alignItems: 'center', marginBottom: 20, borderWidth: 1, borderColor: '#c2c2c1', position: 'sticky'}}
+        style={{padding: 1, borderRadius: 50, width: 42, height: 42, justifyContent: 'center', alignItems: 'center', marginBottom: 20, borderWidth: 1, borderColor: '#74F680', position: 'sticky'}}
           onPress={() => {
             Animated.timing(scaleValue, {
               toValue: showMenu ? 1 : 0.88,
@@ -276,14 +276,15 @@ export default function Home({navigation, route}) {
             setShowMenu(!showMenu);
           }}>
 
-            <Ionicons name='close' size={20} color={colors.light} />
+            <Ionicons name='close' size={20} color={'#74F680'} />
 
           </TouchableOpacity>
       <View style={styles.UserProfileCardContianer}>
         <Image source={logo} style={{
-          width: '70%',
-          height: 80,
-          marginBottom: 20,
+          width: '95%',
+          height: 43,
+          marginBottom: 30,
+          marginTop: 10,
         }} />
         <UserProfileCard
           inviti={user?.shareFriend ? user.shareFriend : 0}
@@ -355,8 +356,6 @@ export default function Home({navigation, route}) {
             justifyContent: 'center'
           }}
           onPress={() => {
-            // Do Actions Here....
-            // Scaling the view...
             Animated.timing(scaleValue, {
               toValue: showMenu ? 1 : 0.88,
               duration: 300,
@@ -394,7 +393,7 @@ export default function Home({navigation, route}) {
               borderColor: '#c2c2c1',
               marginTop: 25,
               marginRight: 20,}}>
-                <Ionicons name="menu" size={28} color={colors.dark} />
+                <Ionicons name="menu" size={28} color={colors.orange} />
             </View>
 
           </TouchableOpacity>
@@ -478,7 +477,7 @@ export default function Home({navigation, route}) {
                 region={mapRegion}
                 provider={PROVIDER_GOOGLE}
                 showsUserLocation = {true}
-                showsMyLocationButton = {true}
+                //showsMyLocationButton = {true}
                 customMapStyle={customMapStyle}>
                 {/*<Marker coordinate={mapRegion} title='Marker'
                 />*/}
@@ -530,8 +529,23 @@ export default function Home({navigation, route}) {
                         </View>
                       </TouchableOpacity>  
                     )}
+
                     <TouchableOpacity style={styles.scanButton} onPress={handleScanButtonPress}>
                         <Ionicons name="qr-code" size={30} color={!isScanning ? 'white' : 'green'} />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={{
+                      backgroundColor: colors.dark,
+                      width: 50,
+                      height: 50,
+                      borderRadius: 50,
+                      zIndex: 10,
+                      display: 'flex',
+                      flexDirection: 'row',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      marginLeft: 20,
+                    }}>
+                      <Ionicons size={30} name='location' color={"#74F680"} />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -579,8 +593,9 @@ const TabButton = (currentTab, setCurrentTab, title, image, route, navigation, u
         color={colors.light} />
 
         <Text style={{
-          fontSize: 17,
+          fontSize: 16,
           fontWeight: '500',
+          fontFamily: 'poppins_500',
           paddingLeft: 15,
           color: currentTab == title ? "#fff" : colors.light
         }}>{title}</Text>
@@ -702,6 +717,7 @@ const styles = StyleSheet.create({
   map: {
     width: '100%',
     height: '100%',
+    paddingBottom: 100, 
     overflow: 'hidden',
     borderBottomLeftRadius: 40,
     borderBottomRightRadius: 40,
@@ -735,8 +751,9 @@ const styles = StyleSheet.create({
     bottom: 80,
     width: '100%',
     justifyContent: 'center',
+    paddingLeft: 35,
     alignItems: 'center',
-    flexDirection: 'column',
+    flexDirection: 'row',
   },
   effect: {
     width: '100%',
