@@ -4,17 +4,19 @@ const stripe = require('stripe')('sk_test_51N1TzKKy8OcUrFfrU2mW5nUC3kEBLccBV2974
 
 module.exports.createPayment = async (req, res) => {
     try {
-        const { email } = req.body; // Estrai l'email dai parametri della richiesta
+        const { email } = req.body;
         const customer = await stripe.customers.create({
-            email: email, // Utilizza l'email estratta
+            email: email, 
         });
 
         const paymentIntent = await stripe.paymentIntents.create({
-            amount: 1000, 
+            amount: 10, 
             currency: 'eur', 
-            description: 'Esempio di pagamento',
+            description: 'Pagamento di prova',
             payment_method_types: ['card'],
-            customer: customer.id, // Collega il pagamento al cliente creato
+            confirmation_method: 'manual',
+            confirm: true,
+            customer: customer.id, 
         });
 
         const clientSecret = paymentIntent.client_secret;
@@ -73,13 +75,18 @@ module.exports.createPaymentAndSaveCard = async (req, res) => {
 };
 
 module.exports.confirmPayment = async (req, res) => {
-    const { paymentMethodId, paymentIntentId } = req.body;
+    const { paymentMethodId, paymentIntentId, cardDetails, id } = req.body;
     console.log(paymentMethodId);
     
         try {
             const paymentIntent = await stripe.paymentIntents.confirm(paymentIntentId, {
                 payment_method: paymentMethodId,
             });
+
+            const user = await User.findById(id);
+            user.cards.push({cardDetails})
+
+            await user.save();
     
             res.json({ success: true, paymentIntent });
         } catch (error) {
@@ -107,3 +114,27 @@ module.exports.orders = async (req, res) => {
         return res.send(error.message)
     }
 }
+
+exports.paymentSheet = async (req, res) => {
+
+    const { email } = req.body;
+    const customer = await stripe.customers.create({
+        email: email, 
+    });
+    const ephemeralKey = await stripe.ephemeralKeys.create(
+      {customer: customer.id},
+      {apiVersion: '2022-11-15'}
+    );
+    const setupIntent = await stripe.setupIntents.create({
+      customer: customer.id,
+      //payment_method_types: ["card"],
+      automatic_payment_methods: {
+        enabled: true,
+      },
+    });
+    res.json({
+      setupIntent: setupIntent.client_secret,
+      ephemeralKey: ephemeralKey.secret,
+      customer: customer.id,
+    })
+  };

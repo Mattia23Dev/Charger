@@ -1,11 +1,71 @@
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Share, Animated, ActivityIndicator } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Share, Animated, ActivityIndicator, Alert } from 'react-native'
 import { Ionicons } from "@expo/vector-icons";
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { colors, network } from '../../constants';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { PanGestureHandler, State, GestureHandlerRootView, TextInput  } from 'react-native-gesture-handler';
+import { StripeProvider } from '@stripe/stripe-react-native';
+import { useStripe } from '@stripe/stripe-react-native';
 
 const Payments = ({navigation, route}) => {
     const { user } = route.params;
+    const publishableKey = 'pk_test_51N1TzKKy8OcUrFfrGTKEGh0HfSc8ZzobBjnfpmOsakeUgPwXTbzEWq0KfRvBsyhwpdll82kjjIdmRyItCFWR2k7H00zS0JO6Zt';
+
+    const { initPaymentSheet, presentPaymentSheet } = useStripe();
+    const [cardDetails, setCardDetails] = useState({});
+    const [paymentInProgress, setPaymentInProgress] = useState(false);  
+  
+    const fetchPaymentSheetParams = async () => {
+      const response = await fetch(`${network.serverip}/payment-sheet`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: {
+          email: user.email,
+        }
+      });
+      const { setupIntent, ephemeralKey, customer } = await response.json();
+  
+      return {
+        setupIntent,
+        ephemeralKey,
+        customer,
+      };
+    };
+  
+    const initializePaymentSheet = async () => {
+      const {
+        setupIntent,
+        ephemeralKey,
+        customer,
+      } = await fetchPaymentSheetParams();
+  
+      const { error } = await initPaymentSheet({
+        merchantDisplayName: "Example, Inc.",
+        customerId: customer,
+        customerEphemeralKeySecret: ephemeralKey,
+        setupIntentClientSecret: setupIntent,
+        allowsDelayedPaymentMethods: true,
+      });
+      if (!error) {
+        //setLoading(true);
+      }
+    };
+  
+    const openPaymentSheet = async () => {
+      const { error } = await presentPaymentSheet();
+  
+      if (error) {
+        Alert.alert(`Error code: ${error.code}`, error.message);
+      } else {
+        Alert.alert('Success', 'Your payment method is successfully set up for future payments!');
+      }
+    };
+  
+    useEffect(() => {
+      initializePaymentSheet();
+    }, []);
 
     const shareContent = async () => {
         try {
@@ -43,21 +103,6 @@ const Payments = ({navigation, route}) => {
     const [promoCodePopup, setPromoCodePopup] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    
-    _storeData = async (user) => {
-      try {
-        console.log('Updating user data:', user);
-        setUser(user);
-        navigation.setParams({ user: userData });
-        AsyncStorage.setItem("authUser", JSON.stringify(user));
-        setTimeout(() => {
-          setLoading(false);
-        }, 2000);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
 
   return (
     <GestureHandlerRootView> 
@@ -65,7 +110,7 @@ const Payments = ({navigation, route}) => {
             {promoCodePopup && (
               <View style={styles.popupShadow}>
                 <PromoPopup 
-                setPopupPromo={setPromoCodePopup} setLoading={setLoading} user={user} _storeData={_storeData} />
+                setPopupPromo={setPromoCodePopup} setLoading={setLoading} user={user} navigation={navigation} />
               </View>
             )}  
             {loading && (
@@ -91,7 +136,7 @@ const Payments = ({navigation, route}) => {
           />
         </TouchableOpacity>
         <Text style={{ fontSize: 22, textAlign: 'center', color: '#fff', fontWeight: 500, marginTop: 30, }}>Pagamenti</Text>
-        <Text style={{ fontSize: 34, textAlign: 'center', color: '#fff', fontWeight: 500, marginTop: 4, }}>Credito: {user?.minutiGratis ? user.minutiGratis : 0} minuti</Text>
+        <Text style={{ fontSize: 34, textAlign: 'center', color: colors.green, fontWeight: 500, marginTop: 4, }}>Credito: {user?.minuti ? user.minuti : 0} minuti</Text>
       </View>
       <View style={styles.bodyContainer}>
             <View style={{
@@ -113,28 +158,33 @@ const Payments = ({navigation, route}) => {
                 <Text style={{color: colors.dark, fontWeight: 500, marginLeft: 20, fontSize: 22, textAlign: 'center'}}>Metodi di pagamento</Text>
             </View>
             <View style={styles.faq}>
-              <TouchableOpacity style={{
-                    borderRadius: 30,
-                    width: '40%',
-                    borderColor: colors.orange,
-                    borderWidth: 1.6,
-                    borderStyle: 'dashed',
-                    paddingVertical: 15,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'flex-start',
-                    paddingHorizontal: 30,
-                    marginLeft: 0,
-                    flexDirection: 'row',
-                    width: '90%'
-              }}
-              onPress={handleNavigate}>
-                <Ionicons
-                name="add-outline"
-                color={colors.orange}
-                size={25}/>
-                <Text style={{color: colors.orange, fontWeight: 500, marginLeft: 20, fontSize: 18, textAlign: 'center'}}>Aggiungi carta</Text>
-              </TouchableOpacity>
+              <StripeProvider
+              publishableKey={publishableKey}
+              urlScheme="your-url-scheme"
+              >
+                <TouchableOpacity style={{
+                      borderRadius: 30,
+                      width: '40%',
+                      borderColor: colors.orange,
+                      borderWidth: 1.6,
+                      borderStyle: 'dashed',
+                      paddingVertical: 15,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'flex-start',
+                      paddingHorizontal: 30,
+                      marginLeft: 0,
+                      flexDirection: 'row',
+                      width: '90%'
+                }}
+                onPress={openPaymentSheet}>
+                  <Ionicons
+                  name="add-outline"
+                  color={colors.orange}
+                  size={25}/>
+                  <Text style={{color: colors.orange, fontWeight: 500, marginLeft: 20, fontSize: 18, textAlign: 'center'}}>Aggiungi carta</Text>
+                </TouchableOpacity>
+              </StripeProvider>  
             </View>
             <View style={{
                     borderRadius: 30,
@@ -239,11 +289,26 @@ const Payments = ({navigation, route}) => {
 
 export default Payments
 
-const PromoPopup = ({setPopupPromo, setLoading, user}) => {
+const PromoPopup = ({setPopupPromo, setLoading, user, navigation}) => {
 
   const [promoCode, setPromoCode] = useState("");
 
+  _storeData = async (user) => {
+    try {
+      console.log('Updating user data:', user);
+      //setUser(user);
+      navigation.setParams({ user: user });
+      AsyncStorage.setItem("authUser", JSON.stringify(user));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const handleSendPromo = async () => {
+    if (promoCode == "" || promoCode.length < 6 || promoCode.length > 0) {
+      Alert.alert("Il codice deve avere 6 cifre");
+      return
+    }
     setLoading(true);
       try {
         const response = await fetch(network.serverip+'/send-promocode', {
@@ -258,16 +323,19 @@ const PromoPopup = ({setPopupPromo, setLoading, user}) => {
         });
     
         if (!response.ok) {
-          const data = await response.json();
+          const data = await response.text();
           console.error('Errore:', data.message);
+          setLoading(false);
         } else {
           const data = await response.json();
-          console.log('Risposta:', data);
+          console.log('Risposta:', data.updatedUser);
           _storeData(data.updatedUser);
-          setLoading(true);
+          setLoading(false);
+          setPopupPromo(false);
         }
       } catch (error) {
         console.error('Errore nella richiesta:', error.message);
+        setLoading(false);
       }
   }
 
@@ -296,6 +364,7 @@ const PromoPopup = ({setPopupPromo, setLoading, user}) => {
             style={styles.input}
             value={promoCode}
             onChangeText={(text) => setPromoCode(text)}
+            autoCapitalize="characters"
           />
         </View>
       </View>

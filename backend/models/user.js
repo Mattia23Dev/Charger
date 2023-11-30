@@ -22,12 +22,7 @@ const userSchema = mongoose.Schema({
     inviti: {type: Number, default: 0},
     shareCode: {type: String, unique: true},
     cards: [
-        {
-            cardNumber: String,
-            expirationDate: String,
-            cvv: String,
-            cardHolder: String,
-        }
+        {}
     ],
     friendCode : [String],
 },{timestamps: true})

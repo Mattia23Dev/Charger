@@ -36,7 +36,7 @@ const { checkout } = require("./controllers/user/cart")
 const { isAdmin, checkAuth } = require("./controllers/middlewares/auth");
 const { dashboardData, getAllUsers } = require('./controllers/admin/dashboard');
 const { getAllOrders, changeStatusOfOrder } = require('./controllers/admin/orders');
-const { orders, createPayment, createPaymentAndSaveCard, confirmPayment } = require('./controllers/user/orders');
+const { orders, createPayment, createPaymentAndSaveCard, confirmPayment, paymentSheet } = require('./controllers/user/orders');
 const { addCategory, getCategories, updateCategory, deleteCategory } = require('./controllers/categories/category');
 const { addToWishlist, wishlist, removeFromWishlist } = require('./controllers/user/wishlist');
 const {createTessera, getTessere, updateTessera, deleteTessera, createTesseraAdmuin} = require('./controllers/tessera/tessera');
@@ -88,6 +88,8 @@ app.post("/create-payment", createPayment)
 app.post("/confirm-payment", confirmPayment)
 app.post("/create-payment-save-card", createPaymentAndSaveCard)
 
+app.post('/payment-sheet', paymentSheet)
+
 // CHECKOUT
 app.post("/checkout",[checkAuth],checkout)
 
@@ -103,7 +105,7 @@ app.get("/admin/order-status",[isAdmin],changeStatusOfOrder)
 app.get("/admin/users",[isAdmin],getAllUsers)
 
 //SHARE CODE
-app.post("send-promocode", sendPromoCode);
+app.post("/send-promocode", sendPromoCode);
 
 // PARTECIPAZIONE 
 app.post("/add-part", addPartecipazione)

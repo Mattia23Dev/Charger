@@ -9,37 +9,37 @@ exports.sendPromoCode = async (req, res) => {
       const user = await User.findById(id);
   
       if (!user) {
-        return res.json({
+        res.json({
           message: 'Utente non trovato',
           status: 404,
           success: false,
+          updatedUser: user,
         });
       }
   
       const existingShareCode = await User.findOne({ shareCode: promoCode });
   
       if (!existingShareCode) {
-        return res.json({
+        res.json({
           message: 'Promo code non esistente',
           status: 404,
           success: false,
+          updatedUser: user,
         });
       }
   
       // Verifica se il promoCode è già nell'array friendCode
       if (user.friendCode.includes(promoCode)) {
-        return res.json({
+        res.json({
           message: 'Il promo code è già presente nell\'array friendCode',
           status: 400,
           success: false,
+          updatedUser: user,
         });
       }
-  
-      // Aggiungi 15 minuti all'utente corrente
-      user.minutes += 15;
-  
-      // Aggiungi 15 minuti all'utente con il promo code
-      existingShareCode.minutes += 15;
+
+      user.minuti += 15;
+      existingShareCode.minuti += 15;
   
       user.friendCode.push(promoCode);
   

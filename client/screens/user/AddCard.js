@@ -4,10 +4,9 @@ import React, {useEffect, useRef, useState} from 'react'
 import { colors, network } from '../../constants';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FormProvider, useForm } from 'react-hook-form'
-import CreditCardForm, { Button, FormModel } from 'rn-credit-card'
-import { initStripe } from '@stripe/stripe-react-native';
-import { StripeSdk } from '@stripe/stripe-react-native';
-import { StripeCardParams, Stripe } from '@stripe/stripe-js';
+import CreditCardForm, { Button, CardFields, FormModel } from 'rn-credit-card'
+import { CardForm, StripeProvider } from '@stripe/stripe-react-native';
+import { CardField, useStripe } from '@stripe/stripe-react-native';
 import LottieView from 'lottie-react-native';
 import animationLoad from './assets/loading.json';
 
@@ -19,25 +18,10 @@ const publishableKey = 'pk_test_51N1TzKKy8OcUrFfrGTKEGh0HfSc8ZzobBjnfpmOsakeUgPw
 
 const AddCard = ({navigation, route}) => {
     const [user, setUser] = useState({});
-    const animation = useRef(null);
+    const [isReady, setIsReady] = useState(false);
     const [processing, setProcessing] = useState(false);
 
-    const handleCreditCardChange = (formData) => {
-        console.log(formData);
-      };
-
-      useEffect(() => {
-        initStripe({
-          publishableKey: publishableKey,
-          merchantIdentifier: 'merchant.identifier',
-          urlScheme: "your-url-scheme",
-        });
-
-      }, []);
-
-      //const stripe = new Stripe(publishableKey);
-
-      const formMethods = useForm({
+    const formMethods = useForm({
         // to trigger the validation on the blur event
         mode: 'onBlur',
         defaultValues: {
@@ -131,10 +115,10 @@ const AddCard = ({navigation, route}) => {
       </View>
       <FormProvider {...formMethods}>
       <SafeAreaView style={styles.bodyContainer}>
-        <KeyboardAvoidingView
+        <View
           style={styles.avoider}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-          <CreditCardForm
+          {/*<CreditCardForm
             LottieView={LottieView}
             horizontalStart={false}
             inputColors={{
@@ -147,17 +131,24 @@ const AddCard = ({navigation, route}) => {
                 marginTop: 30,
               },
             }}
-          />
-        </KeyboardAvoidingView>
+          />*/}
+          <StripeProvider
+            publishableKey={publishableKey}
+            urlScheme="your-url-scheme"
+            >
+            <PaymentScreen2 email={user.email} setIsReady={setIsReady} id={user._id} />
+          </StripeProvider>  
+        </View>
         <View style={styles.bottomBody}>
             <Text style={{color: colors.muted}}>
                 Aggiungendo questa carta autorizzo NextaCharge a inviare istruzioni all'istituto emittente per processare
                 i pagamenti in accordo con i termini e condizioni generali in essere con NextaCharge.
             </Text>
             <Button
+                disabled={!isReady}
                 style={styles.bottomButton}
                 title={'AGGIUNGI CARTA'}
-                onPress={handleSubmit(onSubmit)}
+                onPress={handleSubmit}
             />           
         </View>
 
@@ -168,6 +159,184 @@ const AddCard = ({navigation, route}) => {
 }
 
 export default AddCard
+
+function PaymentScreen({email, setIsReady, id}) {
+  const { confirmPayment, initPaymentSheet, presentPaymentSheet } = useStripe();
+  const [clientSecret, setClientSecret] = useState(''); 
+  const [cardDetails, setCardDetails] = useState({});
+  console.log(clientSecret);
+  const [paymentInProgress, setPaymentInProgress] = useState(false);
+  const [ok, setOk] = useState(false);
+
+
+  const fetchClientSecret = async () => {
+    try {
+      const response = await fetch(network.serverip + "/create-payment", {
+        method: "POST", 
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }), 
+      });
+      const data = await response.json();
+      console.log(data);
+      setClientSecret(data.clientSecret);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchClientSecret();
+  }, []);
+
+  const confirmPaymentBack = async (paymentMethodId) => {
+    console.log(paymentMethodId);
+    try {
+      const response = await fetch(network.serverip+'/confirm-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          paymentMethodId: paymentMethodId,
+          paymentIntentId: paymentIntentId,
+          id: id,
+          cardDetails: cardDetails,
+        }),
+      });
+
+      const result = await response.json();
+      console.log(result);
+
+      setPaymentInProgress(false);
+      setOk(true);
+
+    } catch (error) {
+      console.log(error);
+      setPaymentInProgress(false);
+    }
+  }
+
+  const handlePayment = async () => {
+    setPaymentInProgress(true);
+    try {
+      const confirmPaymentResponse = await confirmPayment(clientSecret, {
+        paymentMethodType: 'Card',
+        billingDetails: {
+          email: email,
+        },
+      });
+
+      const paymentMethodId = confirmPaymentResponse.paymentIntent.paymentMethodId;;
+      console.log('paymentMethodId:', paymentMethodId);
+      confirmPaymentBack(paymentMethodId);
+
+      console.log('Pagamento riuscito con il metodo:', paymentMethodId);
+    } catch (error) {
+      console.error('Errore nel pagamento:', error);
+      setPaymentInProgress(false);
+    }
+  };
+
+  return (
+    <>
+    <CardField
+      postalCodeEnabled={true}
+      placeholders={{
+        number: '4242 4242 4242 4242',
+      }}
+      cardStyle={{
+        backgroundColor: colors.muted,
+        textColor: colors.light,
+      }}
+      style={{
+        width: '100%',
+        height: 50,
+        marginVertical: 30,
+      }}
+      onCardChange={(cardDetails) => {
+        if (cardDetails.complete) {
+          setIsReady(true);
+          setCardDetails(cardDetails);
+        }
+        console.log('cardDetails', cardDetails);
+      }}
+      onFocus={(focusedField) => {
+        console.log('focusField', focusedField);
+      }}
+    />
+    </>
+  );
+}
+
+function PaymentScreen2({email, setIsReady, id}) {
+  const { confirmPayment, initPaymentSheet, presentPaymentSheet } = useStripe();
+  const [clientSecret, setClientSecret] = useState(''); 
+  const [cardDetails, setCardDetails] = useState({});
+  console.log(clientSecret);
+  const [paymentInProgress, setPaymentInProgress] = useState(false);
+  const [ok, setOk] = useState(false);
+
+
+  const fetchPaymentSheetParams = async () => {
+    const response = await fetch(`${network.serverip}/payment-sheet`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    const { setupIntent, ephemeralKey, customer } = await response.json();
+
+    return {
+      setupIntent,
+      ephemeralKey,
+      customer,
+    };
+  };
+
+  const initializePaymentSheet = async () => {
+    const {
+      setupIntent,
+      ephemeralKey,
+      customer,
+    } = await fetchPaymentSheetParams();
+
+    const { error } = await initPaymentSheet({
+      merchantDisplayName: "Example, Inc.",
+      customerId: customer,
+      customerEphemeralKeySecret: ephemeralKey,
+      setupIntentClientSecret: setupIntent,
+    });
+    if (!error) {
+      //setLoading(true);
+    }
+  };
+
+  const openPaymentSheet = async () => {
+    const { error } = await presentPaymentSheet();
+
+    if (error) {
+      Alert.alert(`Error code: ${error.code}`, error.message);
+    } else {
+      Alert.alert('Success', 'Your payment method is successfully set up for future payments!');
+    }
+  };
+
+  useEffect(() => {
+    initializePaymentSheet();
+  }, []);
+
+  return (
+    <>
+      <Button
+        variant="primary"
+        title="Set up"
+        onPress={openPaymentSheet}
+      />
+    </>
+  );
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -267,5 +436,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 5,
+  },
+  cardform: {
+  height: 200,
+  width: '95%',
   },
 })

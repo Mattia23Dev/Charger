@@ -65,7 +65,7 @@ const NoleggiGratis = ({navigation, route}) => {
                 backgroundImage: colors.gradient,
                 marginTop: -60,
               }}>
-                <Text style={{color: colors.green, fontWeight: 500, fontSize: 68, textAlign: 'center'}}>{user?.minutiGrats ? user.minutiGrats : 0}</Text>
+                <Text style={{color: colors.green, fontWeight: 500, fontSize: 68, textAlign: 'center'}}>{user?.minuti ? user.minuti : 0}</Text>
                 <Text style={{color: colors.green, fontWeight: 400, fontSize: 20, textAlign: 'center'}}>minuti</Text>
             </LinearGradient>
             <View style={{

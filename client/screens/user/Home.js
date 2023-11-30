@@ -118,7 +118,26 @@ const stationsData = [
 
 export default function Home({navigation, route}) {
   const [currentTab, setCurrentTab] = useState("Home");
-  const { user } = route.params;
+  const [user, setUser] = useState({});
+
+  const retrieveUser = async () => {
+    try {
+      const userString = await AsyncStorage.getItem('authUser');
+      if (userString) {
+        const user = JSON.parse(userString);
+        console.log('User retrieved:', user);
+        setUser(user);
+        return user;
+      } else {
+        console.log('User not found in AsyncStorage');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error retrieving user from AsyncStorage:', error);
+      return null;
+    }
+  };
+
   const [mapRegion, setMapRegion] = useState({
     latitude: 38.7223, // Latitudine approssimativa di Lisbona
     longitude: -9.1393, // Longitudine approssimativa di Lisbona
@@ -138,6 +157,7 @@ export default function Home({navigation, route}) {
   const closeButtonOffset = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    retrieveUser();
     setStationData(stationsData);
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
@@ -287,9 +307,9 @@ export default function Home({navigation, route}) {
           marginTop: 10,
         }} />
         <UserProfileCard
-          inviti={user?.shareFriend ? user.shareFriend : 0}
-          minuti={user?.minuti ? user.minuti : 0}
-          noleggi={user?.noleggi ? user.noleggi : 0}
+          inviti={user ? user.inviti : 0}
+          minuti={user ? user.minuti : 0}
+          noleggi={user ? user.noleggi : 0}
         />
       </View>
 
@@ -415,10 +435,11 @@ export default function Home({navigation, route}) {
                   justifyContent: 'flex-start',
                 }}
               >
-                <Ionicons name='search' color={colors.green} size={20} />
+                <Ionicons name='search' color={colors.light} size={20} />
                 <TextInput
-                style={{marginLeft: 6, fontSize: 17, fontWeight: 600, color: colors.green}}
+                style={{marginLeft: 6, fontSize: 17, fontWeight: 600, color: colors.light}}
                 placeholder="Cerca posizione"
+                placeholderTextColor={colors.light}
                 value={filterText}
                 onChangeText={handleInputChange}
               />                
@@ -634,8 +655,8 @@ const FilterPopup = ({setPopupFilter, onlyOpen, setOnlyOpen, onlyAvailable, setO
         <View style={styles.filterItem}>
         <Text style={{color: colors.muted, fontWeight: '500', fontSize: 16,}}>Mostra solo aperti</Text>
           <Switch
-            trackColor={{ false: colors.muted, true: colors.orange }}
-            thumbColor={onlyOpen ? '#f4f3f4' : '#f4f3f4'}
+            trackColor={{ false: colors.muted, true: colors.dark }}
+            thumbColor={onlyOpen ? colors.green : '#f4f3f4'}
             ios_backgroundColor="#3e3e3e"
             onValueChange={() => setOnlyOpen(!onlyOpen)}
             value={onlyOpen}
@@ -645,7 +666,7 @@ const FilterPopup = ({setPopupFilter, onlyOpen, setOnlyOpen, onlyAvailable, setO
         <Text style={{color: colors.muted, fontWeight: '500', fontSize: 16, width: '60%'}}>Mostra solo con batterie disponibili</Text>
           <Switch
             trackColor={{ false: colors.muted, true: colors.orange }}
-            thumbColor={onlyAvailable ? '#f4f3f4' : '#f4f3f4'}
+            thumbColor={onlyAvailable ? colors.green : '#f4f3f4'}
             ios_backgroundColor="#3e3e3e"
             onValueChange={() => setOnlyAvailable(!onlyAvailable)}
             value={onlyAvailable}
@@ -655,7 +676,7 @@ const FilterPopup = ({setPopupFilter, onlyOpen, setOnlyOpen, onlyAvailable, setO
         <Text style={{color: colors.muted, fontWeight: '500', fontSize: 16, width: '60%'}}>Mostra solo con slot liberi</Text>
           <Switch
             trackColor={{ false: colors.muted, true: colors.orange }}
-            thumbColor={onlyClosed ? '#f4f3f4' : '#f4f3f4'}
+            thumbColor={onlyClosed ? colors.green : '#f4f3f4'}
             ios_backgroundColor="#3e3e3e"
             onValueChange={() => setOnlyClosed(!onlyClosed)}
             value={onlyClosed}
