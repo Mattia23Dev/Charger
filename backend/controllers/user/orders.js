@@ -117,17 +117,18 @@ module.exports.orders = async (req, res) => {
 
 exports.paymentSheet = async (req, res) => {
 
-    const { email } = req.body;
+    const { email, name } = req.body;
+    console.log(req.body);
     const customer = await stripe.customers.create({
-        email: email, 
-    });
+        email: email,
+        name: name,
+      });
     const ephemeralKey = await stripe.ephemeralKeys.create(
       {customer: customer.id},
       {apiVersion: '2022-11-15'}
     );
     const setupIntent = await stripe.setupIntents.create({
       customer: customer.id,
-      //payment_method_types: ["card"],
       automatic_payment_methods: {
         enabled: true,
       },
@@ -136,5 +137,54 @@ exports.paymentSheet = async (req, res) => {
       setupIntent: setupIntent.client_secret,
       ephemeralKey: ephemeralKey.secret,
       customer: customer.id,
+      clientSecret: "sk_test_51N1TzKKy8OcUrFfrU2mW5nUC3kEBLccBV2974HaHTuylMHFCl7Lw8qBHtJ1ppXlimbFIZ9gSCM8izR2sbKVAJNFG00nytofunW",
     })
+  };
+
+  exports.savePaymentDetails = async (req, res) => {
+    try {
+      const {
+        customerId,
+        setupIntentId,
+        ephemeralKey,
+        last4,
+        id
+      } = req.body;
+
+      console.log(req.body);
+  
+      const user = await User.findById(id);
+  
+      if (!user) {
+       return res.json({
+            status: 404,
+            success: false,
+            message: 'Utente non trovato',
+        })
+      }
+  
+      user.stripeCustomerId = customerId;
+      user.stripeEphemeralKey = ephemeralKey;
+      user.stripeSetupIntentId = setupIntentId;
+  
+      user.stripePaymentMethods.push({
+        last4,
+      });
+  
+      await user.save();
+  
+      res.json({
+        success: true,
+        status: 200,
+        message: 'Payment details saved successfully',
+        user,
+      });
+    } catch (error) {
+      console.error('Errore:', error.message);
+      res.json({
+        success: false,
+        status: 500,
+        message: 'Failed to save payment details. Please try again.',
+      });
+    }
   };

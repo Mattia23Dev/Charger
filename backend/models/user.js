@@ -21,10 +21,19 @@ const userSchema = mongoose.Schema({
     minuti: {type: Number, default: 0},
     inviti: {type: Number, default: 0},
     shareCode: {type: String, unique: true},
-    cards: [
-        {}
-    ],
     friendCode : [String],
+    stripeCustomerId: String,
+    stripeEphemeralKey: String,
+    stripeSetupIntentId: String,
+    stripePaymentMethods: [
+        {
+            paymentMethodId: String,
+            last4: String,
+            expirationDate: String,
+            country: String,
+            billingAddress: String,
+        }
+    ],
 },{timestamps: true})
 
 

@@ -11,9 +11,14 @@ const Payments = ({navigation, route}) => {
     const { user } = route.params;
     const publishableKey = 'pk_test_51N1TzKKy8OcUrFfrGTKEGh0HfSc8ZzobBjnfpmOsakeUgPwXTbzEWq0KfRvBsyhwpdll82kjjIdmRyItCFWR2k7H00zS0JO6Zt';
 
-    const { initPaymentSheet, presentPaymentSheet } = useStripe();
-    const [cardDetails, setCardDetails] = useState({});
+    const [cards, setCards] = useState([]);
+    const { initPaymentSheet, presentPaymentSheet, confirmPaymentSheetPayment } = useStripe();
+    const [load, setLoad] = useState(true);
+    const [ephKey, setEphKey] = useState();
     const [paymentInProgress, setPaymentInProgress] = useState(false);  
+    const [clientSecret, setClientSecret] = useState();
+    const [setIntent, setSetIntente] = useState();
+    const [customerId, setCustomerId] = useState();
   
     const fetchPaymentSheetParams = async () => {
       const response = await fetch(`${network.serverip}/payment-sheet`, {
@@ -21,16 +26,28 @@ const Payments = ({navigation, route}) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: {
+        body: JSON.stringify({
           email: user.email,
-        }
+          name: user.name + ' ' + user.surname,
+        }),
       });
-      const { setupIntent, ephemeralKey, customer } = await response.json();
+      const { setupIntent, ephemeralKey, customer , clientSecret} = await response.json();
+
+      setEphKey(ephemeralKey);
+      setSetIntente(setupIntent);
+      setClientSecret(clientSecret);
+      setCustomerId(customer);
+
+      const storedPaymentDetailsString = await AsyncStorage.getItem('paymentDetails');
+      const storedPaymentDetails = JSON.parse(storedPaymentDetailsString);
+      setCards(storedPaymentDetails);
+      console.log(storedPaymentDetails);
   
       return {
         setupIntent,
         ephemeralKey,
         customer,
+        clientSecret,
       };
     };
   
@@ -39,29 +56,93 @@ const Payments = ({navigation, route}) => {
         setupIntent,
         ephemeralKey,
         customer,
+        clientSecret,
       } = await fetchPaymentSheetParams();
   
       const { error } = await initPaymentSheet({
-        merchantDisplayName: "Example, Inc.",
+        merchantDisplayName: "Mattia Noris",
         customerId: customer,
         customerEphemeralKeySecret: ephemeralKey,
         setupIntentClientSecret: setupIntent,
         allowsDelayedPaymentMethods: true,
+        customFlow: true,
+        applePay: {
+          merchantCountryCode: "IT"
+        },
       });
       if (!error) {
-        //setLoading(true);
+        setLoad(false);
+      } else {
+        console.log(error)
       }
     };
-  
+
     const openPaymentSheet = async () => {
-      const { error } = await presentPaymentSheet();
+      const { error, paymentOption  } = await presentPaymentSheet({clientSecret: clientSecret});
   
       if (error) {
         Alert.alert(`Error code: ${error.code}`, error.message);
       } else {
-        Alert.alert('Success', 'Your payment method is successfully set up for future payments!');
+        setLoad(true);
+        try {
+
+          const { error, paymentMethod } = await confirmPaymentSheetPayment();
+          console.log(paymentOption);
+
+          if (error) {
+            Alert.alert(`Error code: ${error.code}`, error.message);
+          } else {
+            Alert.alert(
+              'Success',
+              'Your order is confirmed!'
+            );
+          }
+          if (paymentOption) {
+            const cardDetails = {
+              last4: paymentOption.label,
+              created: new Date(),
+            };
+      
+            const response = await fetch(`${network.serverip}/save-payment-details`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                id: user._id,
+                customerId: customerId,
+                setupIntentId: setIntent.id,
+                ephemeralKey: ephKey,
+                ...cardDetails,
+              }),
+            });
+      
+            if (response.ok) {
+              console.log('Success', 'Your payment method is successfully set up for future payments!');
+              const paymentDetails = [{
+                customerId: customerId,
+                last4: paymentOption.label,
+              }];
+              
+              const paymentDetailsString = JSON.stringify(paymentDetails);
+              
+              await AsyncStorage.setItem('paymentDetails', paymentDetailsString);
+              setCards(paymentDetails);
+              setLoad(false);
+            } else {
+              const data = await response.json();
+              console.error('Errore:', data.message);
+              Alert.alert('Error', 'Failed to save payment details. Please try again.');
+            }
+          } else {
+            console.log(paymentMethod, 'OPZIONE PAGAMENTO: ' + paymentOption);
+          }
+      } catch (error) {
+        console.error('Errore:', error.message);
+        Alert.alert('Error', 'An error occurred while processing the payment. Please try again.');
       }
-    };
+      }
+    }; 
   
     useEffect(() => {
       initializePaymentSheet();
@@ -105,137 +186,51 @@ const Payments = ({navigation, route}) => {
 
 
   return (
+    <StripeProvider
+    publishableKey={publishableKey}
+    urlScheme="your-url-scheme"
+    merchantIdentifier="merchant.com.{{YOUR_APP_NAME}}"
+    >
+    {load && (
+        <View style={styles.popupShadow}>
+          <ActivityIndicator size="large" color={colors.green} />
+        </View>
+    )}
     <GestureHandlerRootView> 
-    <View style={styles.container}>
-            {promoCodePopup && (
-              <View style={styles.popupShadow}>
-                <PromoPopup 
-                setPopupPromo={setPromoCodePopup} setLoading={setLoading} user={user} navigation={navigation} />
-              </View>
-            )}  
-            {loading && (
-              <View style={styles.popupShadow}>
-                <ActivityIndicator size="large" color={colors.green} />
-              </View>  
-            )}
-      <View style={styles.topContainer}>
-      <TouchableOpacity
-        style={{
-          position: 'absolute',
-          left: 20,
-          top: 35,
-        }}
-          onPress={() => {
-            navigation.goBack();
-          }}
-        >
-          <Ionicons
-            name="arrow-back-circle-outline"
-            size={30}
-            color={colors.light}
-          />
-        </TouchableOpacity>
-        <Text style={{ fontSize: 22, textAlign: 'center', color: '#fff', fontWeight: 500, marginTop: 30, }}>Pagamenti</Text>
-        <Text style={{ fontSize: 34, textAlign: 'center', color: colors.green, fontWeight: 500, marginTop: 4, }}>Credito: {user?.minuti ? user.minuti : 0} minuti</Text>
-      </View>
-      <View style={styles.bodyContainer}>
-            <View style={{
-                    borderRadius: 30,
-                    width: '90%',
-                    paddingVertical: 15,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'flex-start',
-                    paddingHorizontal: 30,
-                    marginLeft: 0,
-                    flexDirection: 'row',
-                    width: '90%'
-              }}>
-                <Ionicons
-                name="card-outline"
-                color={colors.dark}
-                size={28}/>
-                <Text style={{color: colors.dark, fontWeight: 500, marginLeft: 20, fontSize: 22, textAlign: 'center'}}>Metodi di pagamento</Text>
-            </View>
-            <View style={styles.faq}>
-              <StripeProvider
-              publishableKey={publishableKey}
-              urlScheme="your-url-scheme"
-              >
-                <TouchableOpacity style={{
-                      borderRadius: 30,
-                      width: '40%',
-                      borderColor: colors.orange,
-                      borderWidth: 1.6,
-                      borderStyle: 'dashed',
-                      paddingVertical: 15,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'flex-start',
-                      paddingHorizontal: 30,
-                      marginLeft: 0,
-                      flexDirection: 'row',
-                      width: '90%'
-                }}
-                onPress={openPaymentSheet}>
-                  <Ionicons
-                  name="add-outline"
-                  color={colors.orange}
-                  size={25}/>
-                  <Text style={{color: colors.orange, fontWeight: 500, marginLeft: 20, fontSize: 18, textAlign: 'center'}}>Aggiungi carta</Text>
-                </TouchableOpacity>
-              </StripeProvider>  
-            </View>
-            <View style={{
-                    borderRadius: 30,
-                    width: '90%',
-                    paddingVertical: 15,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'flex-start',
-                    paddingHorizontal: 30,
-                    marginLeft: 0,
-                    flexDirection: 'row',
-                    width: '90%'
-              }}>
-                <Ionicons
-                name="pricetag"
-                color={colors.dark}
-                size={28}/>
-                <Text style={{color: colors.dark, fontWeight: 500, marginLeft: 20, fontSize: 22, textAlign: 'center'}}>Promozioni attivate</Text>
-            </View>
-            <View style={styles.faq}>
-              <TouchableOpacity style={{
-                    borderRadius: 30,
-                    width: '40%',
-                    borderColor: colors.orange,
-                    borderWidth: 1.6,
-                    borderStyle: 'dashed',
-                    paddingVertical: 15,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'flex-start',
-                    marginLeft: 0,
-                    paddingHorizontal: 30,
-                    flexDirection: 'row',
-                    width: '90%'
+        <View style={styles.container}>
+                {promoCodePopup && (
+                  <View style={styles.popupShadow}>
+                    <PromoPopup 
+                    setPopupPromo={setPromoCodePopup} setLoading={setLoading} user={user} navigation={navigation} />
+                  </View>
+                )}  
+                {loading && (
+                  <View style={styles.popupShadow}>
+                    <ActivityIndicator size="large" color={colors.green} />
+                  </View>  
+                )}
+          <View style={styles.topContainer}>
+          <TouchableOpacity
+            style={{
+              position: 'absolute',
+              left: 20,
+              top: 35,
+            }}
+              onPress={() => {
+                navigation.goBack();
               }}
-              onPress={() => setPromoCodePopup(true)}>
-                <Ionicons
-                name="add-outline"
-                color={colors.orange}
-                size={25}/>
-                <Text style={{color: colors.orange, fontWeight: 500, marginLeft: 20, fontSize: 18, textAlign: 'center'}}>Aggiungi codice sconto</Text>
-              </TouchableOpacity>
-            </View>
-            <PanGestureHandler
-                onGestureEvent={onGestureEvent}
-                onHandlerStateChange={onHandlerStateChange}
-                >
-                <Animated.View
-                    style={[styles.containerExpand, { transform: [{ translateY }] }]}
-                >
-                  <View style={{
+            >
+              <Ionicons
+                name="arrow-back-circle-outline"
+                size={30}
+                color={colors.light}
+              />
+            </TouchableOpacity>
+            <Text style={{ fontSize: 22, textAlign: 'center', color: '#fff', fontWeight: 500, marginTop: 30, }}>Pagamenti</Text>
+            <Text style={{ fontSize: 34, textAlign: 'center', color: colors.green, fontWeight: 500, marginTop: 4, }}>Credito: {user?.minuti ? user.minuti : 0} minuti</Text>
+          </View>
+          <View style={styles.bodyContainer}>
+                <View style={{
                         borderRadius: 30,
                         width: '90%',
                         paddingVertical: 15,
@@ -245,45 +240,170 @@ const Payments = ({navigation, route}) => {
                         paddingHorizontal: 30,
                         marginLeft: 0,
                         flexDirection: 'row',
-                    }}>
+                        width: '90%'
+                  }}>
                     <Ionicons
-                    name="cash-outline"
+                    name="card-outline"
                     color={colors.dark}
                     size={28}/>
-                    <Text style={{color: colors.dark, fontWeight: 500, marginLeft: 20, fontSize: 22, textAlign: 'center'}}>Transazioni</Text>
-                  </View>
-                </Animated.View>
-            </PanGestureHandler>
-            <View style={styles.bottomBody}>
-                <Text style={{width: '45%', color: colors.green, fontSize: 16}}>Invita gli amici e ottieni 60 minuti di credito</Text>
-                <TouchableOpacity
-                onPress={shareContent}
-                style={{
-                    borderRadius: 30,
-                    width: '40%',
-                    backgroundColor: colors.light,
-                    paddingVertical: 13,
+                    <Text style={{color: colors.dark, fontWeight: 500, marginLeft: 20, fontSize: 22, textAlign: 'center'}}>Metodi di pagamento</Text>
+                </View>
+                <View style={styles.faq}>
+                  <ScrollView 
+                  contentContainerStyle={{
                     display: 'flex',
+                    flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    marginLeft: 10,
-                    flexDirection: 'row'
-                }}
-                >
+                    width: '100%',
+                    maxHeight: 90,                    
+                  }}
+                  style={{
+
+                  }}>
+                    {cards && cards.map((card, index) => (
+                      <View style={{
+                        width: '50%',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        flexDirection: 'row',
+                        backgroundColor: colors.dark,
+                        borderRadius: 10,
+                        paddingHorizontal: 20,
+                        paddingVertical: 8,
+                        marginVertical: 5,
+                      }} key={index}>
+                      <Ionicons
+                          name="card-outline"
+                          color={colors.light}
+                          size={20}/>
+                        <Text style={{color: colors.green}}>{card.last4}</Text>
+                      </View>  
+                    ))}
+                  </ScrollView>
+                    <TouchableOpacity style={{
+                          borderRadius: 30,
+                          width: '40%',
+                          borderColor: colors.orange,
+                          borderWidth: 1.6,
+                          borderStyle: 'dashed',
+                          paddingVertical: 15,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'flex-start',
+                          paddingHorizontal: 30,
+                          marginLeft: 0,
+                          flexDirection: 'row',
+                          width: '90%'
+                    }}
+                    onPress={openPaymentSheet}>
+                      <Ionicons
+                      name="add-outline"
+                      color={colors.orange}
+                      size={25}/>
+                      <Text style={{color: colors.orange, fontWeight: 500, marginLeft: 20, fontSize: 18, textAlign: 'center'}}>Aggiungi carta</Text>
+                    </TouchableOpacity>
+                </View>
+                <View style={{
+                        borderRadius: 30,
+                        width: '90%',
+                        paddingVertical: 15,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'flex-start',
+                        paddingHorizontal: 30,
+                        marginLeft: 0,
+                        flexDirection: 'row',
+                        width: '90%'
+                  }}>
                     <Ionicons
-                        name="share"
-                        size={25}
+                    name="pricetag"
+                    color={colors.dark}
+                    size={28}/>
+                    <Text style={{color: colors.dark, fontWeight: 500, marginLeft: 20, fontSize: 22, textAlign: 'center'}}>Promozioni attivate</Text>
+                </View>
+                <View style={styles.faq}>
+                  <TouchableOpacity style={{
+                        borderRadius: 30,
+                        width: '40%',
+                        borderColor: colors.orange,
+                        borderWidth: 1.6,
+                        borderStyle: 'dashed',
+                        paddingVertical: 15,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'flex-start',
+                        marginLeft: 0,
+                        paddingHorizontal: 30,
+                        flexDirection: 'row',
+                        width: '90%'
+                  }}
+                  onPress={() => setPromoCodePopup(true)}>
+                    <Ionicons
+                    name="add-outline"
+                    color={colors.orange}
+                    size={25}/>
+                    <Text style={{color: colors.orange, fontWeight: 500, marginLeft: 20, fontSize: 18, textAlign: 'center'}}>Aggiungi codice sconto</Text>
+                  </TouchableOpacity>
+                </View>
+                <PanGestureHandler
+                    onGestureEvent={onGestureEvent}
+                    onHandlerStateChange={onHandlerStateChange}
+                    >
+                    <Animated.View
+                        style={[styles.containerExpand, { transform: [{ translateY }] }]}
+                    >
+                      <View style={{
+                            borderRadius: 30,
+                            width: '90%',
+                            paddingVertical: 15,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'flex-start',
+                            paddingHorizontal: 30,
+                            marginLeft: 0,
+                            flexDirection: 'row',
+                        }}>
+                        <Ionicons
+                        name="cash-outline"
                         color={colors.dark}
-                         />
-                    <Text
-                    style={{fontSize: 18, marginHorizontal: 5, color: 'black', fontWeight: 600}}>
-                        Invita
-                    </Text>
-                </TouchableOpacity>
-            </View>
-      </View>
-    </View>
+                        size={28}/>
+                        <Text style={{color: colors.dark, fontWeight: 500, marginLeft: 20, fontSize: 22, textAlign: 'center'}}>Transazioni</Text>
+                      </View>
+                    </Animated.View>
+                </PanGestureHandler>
+                <View style={styles.bottomBody}>
+                    <Text style={{width: '45%', color: colors.green, fontSize: 16}}>Invita gli amici e ottieni 60 minuti di credito</Text>
+                    <TouchableOpacity
+                    onPress={shareContent}
+                    style={{
+                        borderRadius: 30,
+                        width: '40%',
+                        backgroundColor: colors.light,
+                        paddingVertical: 13,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginLeft: 10,
+                        flexDirection: 'row'
+                    }}
+                    >
+                        <Ionicons
+                            name="share"
+                            size={25}
+                            color={colors.dark}
+                            />
+                        <Text
+                        style={{fontSize: 18, marginHorizontal: 5, color: 'black', fontWeight: 600}}>
+                            Invita
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+          </View>
+        </View>        
     </GestureHandlerRootView>
+    </StripeProvider>
   )
 }
 

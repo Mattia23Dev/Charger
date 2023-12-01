@@ -36,7 +36,7 @@ const { checkout } = require("./controllers/user/cart")
 const { isAdmin, checkAuth } = require("./controllers/middlewares/auth");
 const { dashboardData, getAllUsers } = require('./controllers/admin/dashboard');
 const { getAllOrders, changeStatusOfOrder } = require('./controllers/admin/orders');
-const { orders, createPayment, createPaymentAndSaveCard, confirmPayment, paymentSheet } = require('./controllers/user/orders');
+const { orders, createPayment, createPaymentAndSaveCard, confirmPayment, paymentSheet, savePaymentDetails } = require('./controllers/user/orders');
 const { addCategory, getCategories, updateCategory, deleteCategory } = require('./controllers/categories/category');
 const { addToWishlist, wishlist, removeFromWishlist } = require('./controllers/user/wishlist');
 const {createTessera, getTessere, updateTessera, deleteTessera, createTesseraAdmuin} = require('./controllers/tessera/tessera');
@@ -89,6 +89,7 @@ app.post("/confirm-payment", confirmPayment)
 app.post("/create-payment-save-card", createPaymentAndSaveCard)
 
 app.post('/payment-sheet', paymentSheet)
+app.post('/save-payment-details', savePaymentDetails);
 
 // CHECKOUT
 app.post("/checkout",[checkAuth],checkout)

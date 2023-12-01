@@ -28,7 +28,6 @@ import Prices from "../screens/user/Prices.js";
 import Profile from "../screens/user/Profile.js";
 import Payments from "../screens/user/Payments.js";
 import NoleggiGratis from "../screens/user/NoleggiGratis.js";
-import AddCard from "../screens/user/AddCard.js";
 import OnboardingScreen from "../screens/user/Onboarding.js";
 import FAQ from "../screens/user/Faq.js";
 import OnboardingStart from "../screens/auth/Onboarding.js";
@@ -66,7 +65,6 @@ const Routes = () => {
         <Stack.Screen name="prices" component={Prices} />
         <Stack.Screen name="payments" component={Payments} />
         <Stack.Screen name="noleggigratis" component={NoleggiGratis} />
-        <Stack.Screen name="addcard" component={AddCard} />
         <Stack.Screen name="faq" component={FAQ} />
 
         <Stack.Screen name="onboarding" component={OnboardingScreen} />
