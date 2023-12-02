@@ -9,7 +9,7 @@ import { useStripe } from '@stripe/stripe-react-native';
 
 const Payments = ({navigation, route}) => {
     const { user } = route.params;
-    const publishableKey = 'pk_test_51N1TzKKy8OcUrFfrGTKEGh0HfSc8ZzobBjnfpmOsakeUgPwXTbzEWq0KfRvBsyhwpdll82kjjIdmRyItCFWR2k7H00zS0JO6Zt';
+    const publishableKey = 'pk_test_51OIbqoCxNUIpLwF5d1GDcsX6WWIWdvn29KbQcT7qrfWNMGLLMb7byQXtydcYrdNjcm9uoZnyYkM2WciEGIPFhMA600Td4jGLRe';
 
     const [cards, setCards] = useState([]);
     const { initPaymentSheet, presentPaymentSheet, confirmPaymentSheetPayment } = useStripe();

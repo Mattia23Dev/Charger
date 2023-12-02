@@ -1,6 +1,6 @@
 const ordersModel = require("../../models/order");
 const User = require('../../models/user');
-const stripe = require('stripe')('sk_test_51N1TzKKy8OcUrFfrU2mW5nUC3kEBLccBV2974HaHTuylMHFCl7Lw8qBHtJ1ppXlimbFIZ9gSCM8izR2sbKVAJNFG00nytofunW');
+const stripe = require('stripe')('sk_test_51OIbqoCxNUIpLwF5rvkNVolvLBIsE4odSYV6eRH0emT8tFtSCyE8Q5OkXk4EBoiKmvjanMFyQOxEY5umoUaWA4g800TCYRRjM6');
 
 module.exports.createPayment = async (req, res) => {
     try {
