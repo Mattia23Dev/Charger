@@ -5,6 +5,9 @@ import { colors } from '../../constants';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import LottieView from 'lottie-react-native';
 import { ActivityIndicator } from 'react-native';
+import i18next, {languageResources} from '../../locales/i18next';
+import { useTranslation } from 'react-i18next';
+import DropDownPicker from 'react-native-dropdown-picker';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
     UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -12,6 +15,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 
 const Profile = ({navigation, route}) => {
     //const { user } = route.params;
+    const {t} = useTranslation();
     const [user, setUser] = useState({});
     const [processing, setProcessing] = useState(false);
     const animation = useRef(null);
@@ -28,7 +32,6 @@ const Profile = ({navigation, route}) => {
     const [sdi, setSDI] = useState(user?.sdi ? user.sdi : "");
 
     const [isExpanded, setIsExpanded] = useState(true);
-    console.log(user);
 
     useEffect(() => {
       async function fetch(){
@@ -120,7 +123,21 @@ const Profile = ({navigation, route}) => {
             console.log("error", error);
             setProcessing(false);
           });
-      };   
+      }; 
+      
+      const [chooseLang, setChooseLang] = useState(false);
+
+      const changeLng = lng => {
+        i18next.changeLanguage(lng);
+        setProcessing(false);
+      };
+    
+      const handleLanguageSelection = async (language) => {
+        setProcessing(true);
+        setChooseLang(false);
+        await AsyncStorage.setItem('selectedLanguage', language);
+        changeLng(language);
+      };
     
   return (
     <View style={styles.container}>
@@ -129,6 +146,62 @@ const Profile = ({navigation, route}) => {
             <ActivityIndicator size="large" color={colors.green} />
         </View>
       )}
+      {chooseLang && (
+        <View style={styles.popupShadow}>
+           <View style={{
+                justifyContent: 'center',
+                alignItems: 'center',
+                backgroundColor: 'white',
+                padding: 0,
+                paddingBottom: 20,
+                borderRadius: 10,
+                elevation: 5, 
+                shadowColor: 'black', // Ombra su iOS
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.3,
+                shadowRadius: 5,
+                width: '80%',
+           }}>
+                <View style={styles.topPopup}>
+                  <TouchableOpacity style={{
+                    backgroundColor: colors.light,
+                    width: 25,
+                    height: 25,
+                    borderRadius: 50,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    position: 'absolute',
+                    left: 15,
+                    top: 20,
+                  }} 
+                  onPress={() => setChooseLang(false)}>
+                    <Ionicons name='close' size={20} color={colors.dark} />
+                  </TouchableOpacity>
+                  <Text style={{color: colors.light, fontSize: 18, fontWeight: 600, fontFamily: 'poppins_600'}}>{t('cambia-lingua-pop')}</Text>
+              </View>
+              <TouchableOpacity
+                  style={styles.languageButton}
+                  onPress={() => handleLanguageSelection('pt')}
+              >
+                  <Text style={styles.buttonText}>Português</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                  style={styles.languageButton}
+                  onPress={() => handleLanguageSelection('en')}
+              >
+                  <Text style={styles.buttonText}>English</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                  style={styles.languageButton}
+                  onPress={() => handleLanguageSelection('it')}
+              >
+                  <Text style={styles.buttonText}>Italiano</Text>
+              </TouchableOpacity>    
+           </View>  
+        </View>
+      )} 
       <View style={styles.topContainer}>
       <TouchableOpacity
         style={{
@@ -146,7 +219,19 @@ const Profile = ({navigation, route}) => {
             color={colors.light}
           />
         </TouchableOpacity>
-        <Text style={{ fontSize: 22, textAlign: 'center', color: '#fff', fontWeight: 500, marginTop: 0, }}>Profilo</Text>
+        <Text style={{ fontSize: 22, textAlign: 'center', color: '#fff', marginTop: 0, fontFamily: 'poppins_600' }}>{t('profilo')}</Text>
+        <TouchableOpacity style={{
+          borderBottomWidth: 1,
+          borderBottomColor: colors.green,
+          position: 'absolute',
+          right: 25,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          top: 40,
+        }} onPress={() => setChooseLang(true)}>
+          <Text style={{fontFamily: 'poppins_600', color: colors.green, fontSize: 13}}>{t("cambia-lingua")}</Text>
+        </TouchableOpacity>
       </View>
       <View style={styles.bodyContainer}>
         <TouchableOpacity style={{
@@ -157,7 +242,7 @@ const Profile = ({navigation, route}) => {
             alignItems: 'center',
         }} onPress={toggleSection}>
             <View>
-                <Text style={styles.textStyle}>Contatti</Text>   
+                <Text style={styles.textStyle}>{t('contatti')}</Text>   
             </View>
             <Ionicons name={isExpanded ? 'arrow-up' : 'arrow-down'} size={25} />
         </TouchableOpacity>
@@ -165,25 +250,25 @@ const Profile = ({navigation, route}) => {
         <View style={styles.contatti}>
           <TextInput
             style={styles.input}
-            placeholder="Nome"
+            placeholder={t('nome')}
             value={nome}
             onChangeText={(text) => setNome(text)}
           />
           <TextInput
             style={styles.input}
-            placeholder="Cognome"
+            placeholder={t('cognome')}
             value={cognome}
             onChangeText={(text) => setCognome(text)}
           />
           <TextInput
             style={styles.input}
-            placeholder="Email"
+            placeholder={t('email')}
             value={email}
             onChangeText={(text) => setEmail(text)}
           />
           <TextInput
             style={styles.input}
-            placeholder="Telefono"
+            placeholder={t('cellulare')}
             value={telefono}
             onChangeText={(text) => setTelefono(text)}
           />
@@ -197,7 +282,7 @@ const Profile = ({navigation, route}) => {
             alignItems: 'center',            
         }} onPress={toggleSection}>
             <View>
-                <Text style={styles.textStyle}>Dati di fatturazione</Text>
+                <Text style={styles.textStyle}>{t('dati-fatturazione')}</Text>
             </View>
             <Ionicons name={isExpanded ? 'arrow-up' : 'arrow-down'} size={25} />
         </TouchableOpacity>
@@ -206,25 +291,25 @@ const Profile = ({navigation, route}) => {
             <ScrollView style={{width: '100%', display: 'flex'}} contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}>
             <TextInput
                 style={styles.input}
-                placeholder="Via"
+                placeholder={t('indirizzo')}
                 value={via}
                 onChangeText={(text) => setVia(text)}
             />
             <TextInput
                 style={styles.input}
-                placeholder="Comune"
+                placeholder={t('citta')}
                 value={comune}
                 onChangeText={(text) => setComune(text)}
             />
             <TextInput
                 style={styles.input}
-                placeholder="Cap"
+                placeholder={t('cap')}
                 value={cap}
                 onChangeText={(text) => setCap(text)}
             />
             <TextInput
                 style={styles.input}
-                placeholder="P.IVA"
+                placeholder={t('piva')}
                 value={pIva}
                 onChangeText={(text) => setPIva(text)}
             />
@@ -242,14 +327,14 @@ const Profile = ({navigation, route}) => {
             />
             </ScrollView>
         </View>
-      )}
+      )} 
         <TouchableOpacity
           onPress={updateAccount}
                 style={styles.bottomBody}
                 >
             <Text
-                    style={{fontSize: 20, marginHorizontal: 5, color: colors.green}}>
-                        Salva
+                    style={{fontSize: 20, marginHorizontal: 5, color: colors.green, fontFamily: 'poppins_600'}}>
+                        {t('salva')}
             </Text>
         </TouchableOpacity>
       </View>
@@ -295,12 +380,13 @@ const styles = StyleSheet.create({
   textStyle: {
     width: '100%',
     paddingHorizontal: 20,
-    color: 'black',
+    color: colors.muted,
     textAlign: 'center',
     fontSize: 22,
-    fontWeight: 600,
+    //fontWeight: 600,
     marginBottom: 30,
     marginTop: 30,
+    fontFamily: 'poppins_500'
   },
   contatti: {
     width: '95%',
@@ -328,6 +414,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center'
   },
+  languageButton: {
+    backgroundColor: colors.muted,
+    padding: 10,
+    marginVertical: 10,
+    borderRadius: 30,
+    width: 200,
+    alignItems: 'center',
+  },
+  topPopup: {
+    width: '100%',
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    backgroundColor: colors.dark,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    paddingVertical: 20,
+    position: 'relative',
+  },
+  buttonText: {
+    color: colors.light,
+    fontSize: 16,
+    fontFamily: 'poppins_500'
+  },
   popupShadow: {
     width: '100%',
     height: '100%',
@@ -336,7 +446,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 15,

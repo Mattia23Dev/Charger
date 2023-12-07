@@ -11,13 +11,15 @@ import {
 import React, { useState } from "react";
 import { colors, network } from "../../constants";
 import CustomInput from "../../components/CustomInput";
-import header_logo from "../../assets/logo-serv.png";
+import header_logo from "../../assets/charger-logo.png";
 import CustomButton from "../../components/CustomButton";
 import { Ionicons } from "@expo/vector-icons";
 import CustomAlert from "../../components/CustomAlert/CustomAlert";
 import InternetConnectionAlert from "react-native-internet-connection-alert";
+import {useTranslation} from 'react-i18next';
 
 const SignupScreen = ({ navigation }) => {
+  const {t} = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -116,11 +118,11 @@ const SignupScreen = ({ navigation }) => {
           </View>
           <View style={styles.screenNameContainer}>
             <View>
-              <Text style={styles.screenNameText}>Registrati</Text>
+              <Text style={styles.screenNameText}>{t('registrati')}</Text>
             </View>
             <View>
               <Text style={styles.screenNameParagraph}>
-                Telefono scarico? Nessun problema
+                {t('telefono-scarico')}
               </Text>
             </View>
           </View>
@@ -163,23 +165,23 @@ const SignupScreen = ({ navigation }) => {
             onPress={signUpHandle}
             style={{
               padding: 15,
-              paddingVertical: 18,
+              paddingVertical: 16,
               width: "100%",
               marginBottom: 10,
               alignItems: "center",
               borderRadius: 30,
-              backgroundColor: colors.orange,
+              backgroundColor: colors.green,
             }}>
-              <Text style={{color: colors.light, fontWeight: '500'}}>Registrati</Text>
+              <Text style={{color: colors.dark, fontFamily: 'poppins_600', fontSize: 18}}>{t('registrati')}</Text>
             </TouchableOpacity>
         </View>
         <View style={styles.bottomContainer}>
-          <Text style={{color: colors.light}}>Hai già un account?</Text>
+          <Text style={{color: colors.light, fontFamily: 'poppins_500'}}>{t('hai-gia-account-accedi')}</Text>
           <Text
             onPress={() => navigation.navigate("login")}
             style={styles.signupText}
           >
-            Accedi
+           {t('accedi')}
           </Text>
         </View>
       </KeyboardAvoidingView>
@@ -214,6 +216,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     height: "10%",
+    paddingTop: 15,
+    marginTop: 40,
+    marginBottom: 40,
   },
   formContainer: {
     flex: 2,
@@ -238,7 +243,6 @@ const styles = StyleSheet.create({
   },
   ForgetText: {
     fontSize: 15,
-    fontWeight: "600",
   },
   buttomContainer: {
     width: "100%",
@@ -251,9 +255,9 @@ const styles = StyleSheet.create({
   },
   signupText: {
     marginLeft: 2,
-    color: colors.orange,
+    color: colors.light,
     fontSize: 15,
-    fontWeight: "600",
+    fontFamily: 'poppins_600'
   },
   screenNameContainer: {
     marginTop: 10,
@@ -265,12 +269,13 @@ const styles = StyleSheet.create({
   },
   screenNameText: {
     fontSize: 30,
-    fontWeight: "800",
     color: colors.light,
+    fontFamily: 'poppins_600'
   },
   screenNameParagraph: {
     marginTop: 5,
     fontSize: 15,
-    color: colors.light
+    color: colors.light,
+    fontFamily: 'poppins_500'
   },
 });

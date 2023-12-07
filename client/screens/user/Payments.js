@@ -6,9 +6,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { PanGestureHandler, State, GestureHandlerRootView, TextInput  } from 'react-native-gesture-handler';
 import { StripeProvider } from '@stripe/stripe-react-native';
 import { useStripe } from '@stripe/stripe-react-native';
+import { useTranslation } from 'react-i18next';
 
 const Payments = ({navigation, route}) => {
     const { user } = route.params;
+    const {t} = useTranslation();
     const publishableKey = 'pk_test_51OIbqoCxNUIpLwF5d1GDcsX6WWIWdvn29KbQcT7qrfWNMGLLMb7byQXtydcYrdNjcm9uoZnyYkM2WciEGIPFhMA600Td4jGLRe';
 
     const [cards, setCards] = useState([]);
@@ -81,7 +83,7 @@ const Payments = ({navigation, route}) => {
       const { error, paymentOption  } = await presentPaymentSheet({clientSecret: clientSecret});
   
       if (error) {
-        Alert.alert(`Error code: ${error.code}`, error.message);
+        console.log(`Error code: ${error.code}`, error.message);
       } else {
         setLoad(true);
         try {
@@ -90,7 +92,7 @@ const Payments = ({navigation, route}) => {
           console.log(paymentOption);
 
           if (error) {
-            Alert.alert(`Error code: ${error.code}`, error.message);
+            console.log(`Error code: ${error.code}`, error.message);
           } else {
             Alert.alert(
               'Success',
@@ -132,7 +134,6 @@ const Payments = ({navigation, route}) => {
             } else {
               const data = await response.json();
               console.error('Errore:', data.message);
-              Alert.alert('Error', 'Failed to save payment details. Please try again.');
             }
           } else {
             console.log(paymentMethod, 'OPZIONE PAGAMENTO: ' + paymentOption);
@@ -176,10 +177,6 @@ const Payments = ({navigation, route}) => {
         }).start();
         }
     };
-
-    const handleNavigate = () => {
-      navigation.navigate("addcard");
-    }
 
     const [promoCodePopup, setPromoCodePopup] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -226,8 +223,8 @@ const Payments = ({navigation, route}) => {
                 color={colors.light}
               />
             </TouchableOpacity>
-            <Text style={{ fontSize: 22, textAlign: 'center', color: '#fff', fontWeight: 500, marginTop: 30, }}>Pagamenti</Text>
-            <Text style={{ fontSize: 34, textAlign: 'center', color: colors.green, fontWeight: 500, marginTop: 4, }}>Credito: {user?.minuti ? user.minuti : 0} minuti</Text>
+            <Text style={{ fontSize: 22, textAlign: 'center', color: '#fff', fontWeight: 500, marginTop: 30, }}>{t('pagamenti')}</Text>
+            <Text style={{ fontSize: 34, textAlign: 'center', color: colors.green, fontWeight: 500, marginTop: 4, }}>{t('credito')}: {user?.minuti ? user.minuti : 0} {t('minuti')}</Text>
           </View>
           <View style={styles.bodyContainer}>
                 <View style={{
@@ -245,43 +242,34 @@ const Payments = ({navigation, route}) => {
                     <Ionicons
                     name="card-outline"
                     color={colors.dark}
-                    size={28}/>
-                    <Text style={{color: colors.dark, fontWeight: 500, marginLeft: 20, fontSize: 22, textAlign: 'center'}}>Metodi di pagamento</Text>
+                    size={25}/>
+                    <Text style={{color: colors.dark, fontWeight: 500, marginLeft: 20, fontSize: 20, textAlign: 'center', fontFamily: 'poppins_600'}}>{t('metodo-pagamento')}</Text>
                 </View>
                 <View style={styles.faq}>
-                  <ScrollView 
-                  contentContainerStyle={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '100%',
-                    maxHeight: 90,                    
-                  }}
-                  style={{
-
-                  }}>
-                    {cards && cards.map((card, index) => (
-                      <View style={{
-                        width: '50%',
+                {cards && cards.length > 0 ? cards.map((card, index) => (
+                      <TouchableOpacity style={{
+                        borderRadius: 30,
+                        width: '40%',
+                        borderColor: colors.orange,
+                        borderWidth: 1,
+                        paddingVertical: 15,
+                        //borderStyle: 'dashed',
                         display: 'flex',
-                        justifyContent: 'space-between',
                         alignItems: 'center',
+                        justifyContent: 'space-between',
+                        paddingHorizontal: 30,
+                        marginLeft: 0,
                         flexDirection: 'row',
-                        backgroundColor: colors.dark,
-                        borderRadius: 10,
-                        paddingHorizontal: 20,
-                        paddingVertical: 8,
-                        marginVertical: 5,
-                      }} key={index}>
+                        width: '90%'
+                      }} key={index}
+                      onPress={openPaymentSheet}>
                       <Ionicons
                           name="card-outline"
-                          color={colors.light}
-                          size={20}/>
-                        <Text style={{color: colors.green}}>{card.last4}</Text>
-                      </View>  
-                    ))}
-                  </ScrollView>
+                          color={colors.dark}
+                          size={25}/>
+                        <Text style={{color: colors.dark, fontFamily: 'poppins_500', fontSize: 20}}>{card.last4}</Text>
+                      </TouchableOpacity>  
+                    )) : (
                     <TouchableOpacity style={{
                           borderRadius: 30,
                           width: '40%',
@@ -302,8 +290,10 @@ const Payments = ({navigation, route}) => {
                       name="add-outline"
                       color={colors.orange}
                       size={25}/>
-                      <Text style={{color: colors.orange, fontWeight: 500, marginLeft: 20, fontSize: 18, textAlign: 'center'}}>Aggiungi carta</Text>
+                      <Text style={{color: colors.orange, fontWeight: 500, marginLeft: 20, fontSize: 17, textAlign: 'center', fontFamily: 'poppins_500'}}>{t('aggiungi-carta')}</Text>
                     </TouchableOpacity>
+                 )}
+
                 </View>
                 <View style={{
                         borderRadius: 30,
@@ -320,8 +310,8 @@ const Payments = ({navigation, route}) => {
                     <Ionicons
                     name="pricetag"
                     color={colors.dark}
-                    size={28}/>
-                    <Text style={{color: colors.dark, fontWeight: 500, marginLeft: 20, fontSize: 22, textAlign: 'center'}}>Promozioni attivate</Text>
+                    size={25}/>
+                    <Text style={{color: colors.dark, fontWeight: 500, marginLeft: 20, fontSize: 20, textAlign: 'center', fontFamily: 'poppins_600'}}>{t('promozioni-attivate')}</Text>
                 </View>
                 <View style={styles.faq}>
                   <TouchableOpacity style={{
@@ -344,7 +334,7 @@ const Payments = ({navigation, route}) => {
                     name="add-outline"
                     color={colors.orange}
                     size={25}/>
-                    <Text style={{color: colors.orange, fontWeight: 500, marginLeft: 20, fontSize: 18, textAlign: 'center'}}>Aggiungi codice sconto</Text>
+                    <Text style={{color: colors.orange, fontWeight: 500, marginLeft: 20, fontSize: 17, textAlign: 'center', fontFamily: 'poppins_500'}}>{t('aggiungi-codice-sconto')}</Text>
                   </TouchableOpacity>
                 </View>
                 <PanGestureHandler
@@ -368,13 +358,13 @@ const Payments = ({navigation, route}) => {
                         <Ionicons
                         name="cash-outline"
                         color={colors.dark}
-                        size={28}/>
-                        <Text style={{color: colors.dark, fontWeight: 500, marginLeft: 20, fontSize: 22, textAlign: 'center'}}>Transazioni</Text>
+                        size={25}/>
+                        <Text style={{color: colors.dark, fontWeight: 500, marginLeft: 20, fontSize: 20, textAlign: 'center', fontFamily: 'poppins_500'}}>{t('transazioni')}</Text>
                       </View>
                     </Animated.View>
                 </PanGestureHandler>
                 <View style={styles.bottomBody}>
-                    <Text style={{width: '45%', color: colors.green, fontSize: 16}}>Invita gli amici e ottieni 60 minuti di credito</Text>
+                    <Text style={{width: '45%', color: colors.green, fontSize: 15, fontFamily: 'poppins_500'}}>{t('invita-amici-testo')}</Text>
                     <TouchableOpacity
                     onPress={shareContent}
                     style={{
@@ -395,8 +385,8 @@ const Payments = ({navigation, route}) => {
                             color={colors.dark}
                             />
                         <Text
-                        style={{fontSize: 18, marginHorizontal: 5, color: 'black', fontWeight: 600}}>
-                            Invita
+                        style={{fontSize: 18, marginHorizontal: 5, color: colors.dark, fontWeight: 600, fontFamily: 'poppins_600'}}>
+                            {t('invita')}
                         </Text>
                     </TouchableOpacity>
                 </View>

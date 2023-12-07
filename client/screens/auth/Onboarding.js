@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
   SafeAreaView,
   Image,
@@ -12,31 +12,14 @@ import {
 } from 'react-native';
 import LottieView from 'lottie-react-native';
 import { colors } from '../../constants';
+import i18next from '../../locales/i18next';
+import {useTranslation} from 'react-i18next';
+//import {useTranslation} from 'react-native-i18n';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const {width, height} = Dimensions.get('window');
 
 const COLORS = {primary: '#282534', white: '#fff'};
-
-const slides = [
-  {
-    id: '1',
-    image: require('../user/assets/payment.json'),
-    title: 'Inserisci un metodo di pagamento',
-    subtitle: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-  },
-  {
-    id: '2',
-    image: require('../user/assets/scan.json'),
-    title: 'Scansiona il QR code',
-    subtitle: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-  },
-  {
-    id: '3',
-    image: require('../user/assets/chargephone.json'),
-    title: 'Carica il telefono',
-    subtitle: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-  },
-];
 
 const Slide = ({item}) => {
     const animation = useRef(null);
@@ -67,6 +50,30 @@ const Slide = ({item}) => {
 
 const OnboardingStart = ({navigation}) => {
   const [currentSlideIndex, setCurrentSlideIndex] = React.useState(0);
+  const [selectedLanguage, setSelectedLanguage] = useState('');
+  const {t} = useTranslation();
+
+  const slides = [
+    {
+      id: '1',
+      image: require('../user/assets/payment.json'),
+      title: t("onboarding1-title"),
+      subtitle: t("onboarding1-subtitle"),
+    },
+    {
+      id: '2',
+      image: require('../user/assets/scan.json'),
+      title: t("onboarding2-title"),
+      subtitle: t("onboarding2-subtitle"),
+    },
+    {
+      id: '3',
+      image: require('../user/assets/chargephone.json'),
+      title: t("onboarding3-title"),
+      subtitle: t("onboarding3-subtitle"),
+    },
+  ];
+
   const ref = React.useRef();
   const updateCurrentSlideIndex = (e) => {
     const contentOffsetX = e.nativeEvent.contentOffset.x;
@@ -89,6 +96,17 @@ const OnboardingStart = ({navigation}) => {
     ref?.current.scrollToOffset({ offset });
     setCurrentSlideIndex(lastSlideIndex);
   };
+
+    const getLanguage = async () => {
+      const languageChoice = await AsyncStorage.getItem('selectedLanguage');
+      setSelectedLanguage(languageChoice);
+    };
+
+  useEffect(() => {
+    getLanguage();
+  }, []);
+
+  console.log(selectedLanguage);
 
   const Footer = () => {
     return (

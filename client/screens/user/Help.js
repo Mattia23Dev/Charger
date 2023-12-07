@@ -96,12 +96,12 @@ const Help = ({navigation}) => {
                 name="star-outline"
                 color={colors.green}
                 size={25}/>
-                <Text style={{color: colors.green, fontWeight: 500, marginLeft: 4, fontSize: 18, textAlign: 'center'}}>Apri il tutorial</Text>
+                <Text style={{color: colors.green, marginLeft: 4, fontSize: 18, textAlign: 'center'}}>Apri il tutorial</Text>
               </TouchableOpacity>
             </View>
             <View style={styles.faq}>
-              <Text style={{fontSize: 20, fontWeight: 500, marginBottom: 15,}}>Scrivici</Text>
-              <Text style={{fontSize: 16, fontWeight: 500, marginBottom: 40, color: colors.muted}}>Vuoi scriverci?</Text>
+              <Text style={{fontSize: 20, marginBottom: 15,}}>Scrivici</Text>
+              <Text style={{fontSize: 16, marginBottom: 40, color: colors.muted}}>Vuoi scriverci?</Text>
               <TouchableOpacity style={{
                     borderRadius: 30,
                     width: '40%',
@@ -119,7 +119,7 @@ const Help = ({navigation}) => {
                 name="mail-outline"
                 color={colors.green}
                 size={25}/>
-                <Text style={{color: colors.green, fontWeight: 500, marginLeft: 4, fontSize: 18}}>assistenza@nextacharge.com</Text>
+                <Text style={{color: colors.green, fontWeight: '500', marginLeft: 4, fontSize: 18}}>assistenza@nextacharge.com</Text>
               </TouchableOpacity>
             </View>
       </View>

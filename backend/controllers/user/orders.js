@@ -188,3 +188,20 @@ exports.paymentSheet = async (req, res) => {
       });
     }
   };
+
+
+  exports.chargeCustomer = async (req, res) => {
+    const { customerId } = req.body;
+  
+    try {
+      const setupIntent = await stripe.setupIntents.create({
+        customer: customerId,
+        usage: 'off_session',
+      });
+  
+      res.json({ success: true, clientSecret: setupIntent.client_secret });
+    } catch (error) {
+      console.error('Errore nel processo di addebito:', error.message);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  };

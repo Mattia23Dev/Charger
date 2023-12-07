@@ -151,7 +151,7 @@ const ForgetPasswordScreen = ({ navigation }) => {
         borderRadius: 30,
         backgroundColor: colors.orange,
       }}>
-        <Text style={{color: colors.light, fontWeight: '500'}}>Invia istruzioni</Text>
+        <Text style={{color: colors.light}}>Invia istruzioni</Text>
       </TouchableOpacity>
       ) : (
       <TouchableOpacity
@@ -165,7 +165,7 @@ const ForgetPasswordScreen = ({ navigation }) => {
         borderRadius: 30,
         backgroundColor: colors.orange,
       }}>
-        <Text style={{color: colors.light, fontWeight: '500'}}>Imposta password</Text>
+        <Text style={{color: colors.light}}>Imposta password</Text>
       </TouchableOpacity>
       )}
     </View>
@@ -201,7 +201,6 @@ const styles = StyleSheet.create({
   },
   screenNameText: {
     fontSize: 30,
-    fontWeight: "800",
     color: colors.light,
   },
   screenNameParagraph: {

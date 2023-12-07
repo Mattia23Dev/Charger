@@ -3,9 +3,11 @@ import { Ionicons } from "@expo/vector-icons";
 import React from 'react'
 import { colors } from '../../constants';
 import {LinearGradient} from 'expo-linear-gradient';
+import {useTranslation} from 'react-i18next';
 
 const NoleggiGratis = ({navigation, route}) => {
     const { user } = route.params;
+    const {t} = useTranslation();
 
     const shareContent = async () => {
         try {
@@ -39,7 +41,7 @@ const NoleggiGratis = ({navigation, route}) => {
             color={colors.light}
           />
         </TouchableOpacity>
-        <Text style={{ fontSize: 22, textAlign: 'center', color: '#fff', fontWeight: 500, marginTop: 0, }}>Noleggi gratis</Text>
+        <Text style={{ fontSize: 22, textAlign: 'center', color: '#fff', fontWeight: 500, marginTop: 0, fontFamily: 'poppins_600'}}>{t('noleggi-gratis')}</Text>
       </View>
       <View style={styles.bodyContainer}>
             <LinearGradient 
@@ -65,8 +67,8 @@ const NoleggiGratis = ({navigation, route}) => {
                 backgroundImage: colors.gradient,
                 marginTop: -60,
               }}>
-                <Text style={{color: colors.green, fontWeight: 500, fontSize: 68, textAlign: 'center'}}>{user?.minuti ? user.minuti : 0}</Text>
-                <Text style={{color: colors.green, fontWeight: 400, fontSize: 20, textAlign: 'center'}}>minuti</Text>
+                <Text style={{color: colors.green, fontWeight: 500, fontSize: 68, textAlign: 'center', fontFamily: 'poppins_600'}}>{user?.minuti ? user.minuti : 0}</Text>
+                <Text style={{color: colors.green, fontWeight: 400, fontSize: 18, textAlign: 'center', fontFamily: 'poppins_500'}}>{t('minuti')}</Text>
             </LinearGradient>
             <View style={{
                     borderRadius: 30,
@@ -79,8 +81,8 @@ const NoleggiGratis = ({navigation, route}) => {
                     marginLeft: 0,
                     flexDirection: 'row',
               }}>
-                <Text style={{color: colors.muted, fontWeight: 500, marginLeft: 20, fontSize: 18, textAlign: 'center'}}>
-                    Per ogni amico che utilizza il tuo codice personale per un noleggio, ricevete entrambi 15 minuti di ricarica gratis.
+                <Text style={{color: colors.muted, fontWeight: 500, marginLeft: 20, fontSize: 18, textAlign: 'center', fontFamily: 'poppins_500'}}>
+                    {t('invita-amici')}
                 </Text>
             </View>
             <View style={{
@@ -98,7 +100,7 @@ const NoleggiGratis = ({navigation, route}) => {
                 name="pricetag"
                 color={colors.dark}
                 size={28}/>
-                <Text style={{color: colors.dark, fontWeight: 500, marginLeft: 10, fontSize: 20, textAlign: 'center'}}>Il tuo codice</Text>
+                <Text style={{color: colors.dark, fontWeight: 500, marginLeft: 10, fontSize: 20, textAlign: 'center', fontFamily: 'poppins_600'}}>{t('tuo-codice')}</Text>
             </View>
             <View style={styles.faq}>
               <TouchableOpacity style={{
@@ -119,7 +121,7 @@ const NoleggiGratis = ({navigation, route}) => {
               </TouchableOpacity>
             </View>
             <View style={styles.bottomBody}>
-                <Text style={{width: '45%', color: colors.green, fontSize: 16}}>Invita gli amici e ottieni 60 minuti di credito</Text>
+                <Text style={{width: '45%', color: colors.green, fontSize: 15, fontFamily: 'poppins_500'}}>{t('invita-amici-testo')}</Text>
                 <TouchableOpacity
                 onPress={shareContent}
                 style={{
@@ -140,8 +142,8 @@ const NoleggiGratis = ({navigation, route}) => {
                         color={colors.dark}
                          />
                     <Text
-                    style={{fontSize: 18, marginHorizontal: 5, color: 'black', fontWeight: 600}}>
-                        Invita
+                    style={{fontSize: 18, marginHorizontal: 5, color: 'black', fontWeight: 600, fontFamily: 'poppins_600'}}>
+                        {t('invita')}
                     </Text>
                 </TouchableOpacity>
             </View>

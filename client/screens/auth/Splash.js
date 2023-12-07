@@ -23,6 +23,7 @@ const Splash = ({ navigation }) => {
     try {
       await fetchFonts()
       const value = await AsyncStorage.getItem("authUser");
+      const language = await AsyncStorage.getItem("selectedLanguage");
       if (value !== null) {
         let user = JSON.parse(value); // covert the authUser value to json
         if (user.userType === "ADMIN") {
@@ -34,9 +35,13 @@ const Splash = ({ navigation }) => {
             navigation.replace("home", { user: JSON.parse(value) }); // navigate to User Home screen
           }, 2000);
         }
+      } else if (language !== null) {
+        setTimeout(() => {
+          navigation.replace("login");
+        }, 2000);
       } else {
         setTimeout(() => {
-          navigation.replace("onboardingstart"); // // navigate to login screen if there is no authUser store in aysnc storage
+          navigation.replace("chooselanguage");
         }, 2000);
       }
     } catch (error) {
@@ -68,7 +73,6 @@ const styles = StyleSheet.create({
   splashText: {
     color: colors.light,
     fontSize: 50,
-    fontWeight: "bold",
   },
   logo: {
     resizeMode: "cover",

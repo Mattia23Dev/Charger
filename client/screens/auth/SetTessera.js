@@ -129,7 +129,7 @@ function PaymentScreen({setVuolePagare, handleCrea, email}) {
 }
 
 const SetTessera = ({ navigation, route }) => {
-  const publishableKey = "pk_test_51N1TzKKy8OcUrFfrGTKEGh0HfSc8ZzobBjnfpmOsakeUgPwXTbzEWq0KfRvBsyhwpdll82kjjIdmRyItCFWR2k7H00zS0JO6Zt";
+  const publishableKey = "pk_test_51OIbqoCxNUIpLwF5d1GDcsX6WWIWdvn29KbQcT7qrfWNMGLLMb7byQXtydcYrdNjcm9uoZnyYkM2WciEGIPFhMA600Td4jGLRe";
   const { email, name } = route.params;
   const [numTessera, setNumTessera] = useState("");
   const [isYes, setIsYes] = useState(true);
@@ -350,7 +350,6 @@ const styles = StyleSheet.create({
   },
   screenNameText: {
     fontSize: 30,
-    fontWeight: "800",
     color: colors.muted,
   },
   screenNameParagraph: {

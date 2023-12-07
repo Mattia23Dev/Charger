@@ -2,8 +2,10 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-nati
 import { Ionicons } from "@expo/vector-icons";
 import React from 'react'
 import { colors } from '../../constants';
+import { useTranslation } from 'react-i18next';
 
 const TermsCondition = ({navigation}) => {
+  const {t} = useTranslation();
   return (
     <View style={styles.container}>
       <View style={styles.topContainer}>
@@ -23,7 +25,7 @@ const TermsCondition = ({navigation}) => {
             color={colors.light}
           />
         </TouchableOpacity>
-        <Text style={{ fontSize: 22, textAlign: 'center', color: '#fff', fontWeight: 500 }}>Termini e Condizioni</Text>
+        <Text style={{ fontSize: 22, textAlign: 'center', color: '#fff' }}>{t('termini-condizioni')}</Text>
       </View>
       <View style={styles.bodyContainer}>
           <ScrollView>
@@ -566,6 +568,7 @@ const styles = StyleSheet.create({
   textStyle: {
     width: '100%',
     paddingHorizontal: 20,
-    color: colors.muted
+    color: colors.muted,
+    fontFamily: 'poppins_500',
   }
 })

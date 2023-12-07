@@ -31,6 +31,7 @@ import NoleggiGratis from "../screens/user/NoleggiGratis.js";
 import OnboardingScreen from "../screens/user/Onboarding.js";
 import FAQ from "../screens/user/Faq.js";
 import OnboardingStart from "../screens/auth/Onboarding.js";
+import ChooseLanguage from "../screens/auth/ChooseLanguage.js";
 
 const Stack = createNativeStackNavigator();
 
@@ -69,6 +70,7 @@ const Routes = () => {
 
         <Stack.Screen name="onboarding" component={OnboardingScreen} />
         <Stack.Screen name="onboardingstart" component={OnboardingStart} />
+        <Stack.Screen name="chooselanguage" component={ChooseLanguage} />
 
         <Stack.Screen name="stationdetails" component={StationDetailScreen} />
         <Stack.Screen name="viewcategories" component={ViewCategoryScreen} />

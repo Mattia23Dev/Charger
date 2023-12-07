@@ -7,11 +7,14 @@ import effect from '../../assets/imageeffect.png';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import close from './assets/close.png';
 import { Ionicons } from "@expo/vector-icons";
-import { colors } from '../../constants';
+import { colors, network } from '../../constants';
 import UserProfileCard from '../../components/UserProfileCard/UserProfileCard';
 import logo from '../../assets/charger-logo.png'
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BarCodeScanner } from 'expo-barcode-scanner';
+import {useTranslation} from 'react-i18next';
+import { StripeProvider, confirmSetupIntent  } from '@stripe/stripe-react-native';
+import { useStripe } from '@stripe/stripe-react-native';
 
 const stationsData = [
   { 
@@ -117,12 +120,17 @@ const stationsData = [
 ]
 
 export default function Home({navigation, route}) {
+  const {t} = useTranslation();
   const [currentTab, setCurrentTab] = useState("Home");
   const [user, setUser] = useState({});
+  const [card, setCard] = useState();
 
   const retrieveUser = async () => {
     try {
       const userString = await AsyncStorage.getItem('authUser');
+      const storedPaymentDetailsString = await AsyncStorage.getItem('paymentDetails');
+      const storedPaymentDetails = JSON.parse(storedPaymentDetailsString);
+      setCard(storedPaymentDetails);
       if (userString) {
         const user = JSON.parse(userString);
         console.log('User retrieved:', user);
@@ -139,8 +147,8 @@ export default function Home({navigation, route}) {
   };
 
   const [mapRegion, setMapRegion] = useState({
-    latitude: 38.7223, // Latitudine approssimativa di Lisbona
-    longitude: -9.1393, // Longitudine approssimativa di Lisbona
+    latitude: 38.7223,
+    longitude: -9.1393,
     latitudeDelta: 0.0922,
     longitudeDelta: 0.0421,
   })
@@ -152,7 +160,6 @@ export default function Home({navigation, route}) {
   const [showMenu, setShowMenu] = useState(false);
   
   const offsetValue = useRef(new Animated.Value(0)).current;
-  // Scale Intially must be One...
   const scaleValue = useRef(new Animated.Value(1)).current;
   const closeButtonOffset = useRef(new Animated.Value(0)).current;
 
@@ -175,6 +182,22 @@ export default function Home({navigation, route}) {
       });*/
     })();
   }, []);
+
+  const getLocationUser = async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        console.error('Permesso di posizione non concesso');
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setMapRegion({ 
+        latitude: location.coords.latitude, 
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      });
+  }
 
   useEffect(() => {
     (async () => {
@@ -209,7 +232,7 @@ export default function Home({navigation, route}) {
     {
       elementType: 'all',
       stylers: [
-        { saturation: -80 }, 
+        { saturation: -40 }, 
       ],
     },
   ];
@@ -235,7 +258,189 @@ export default function Home({navigation, route}) {
   
     setStationData(filteredStations);
     setFilterPopup(false);
-  }
+  };
+
+
+  const publishableKey = 'pk_test_51OIbqoCxNUIpLwF5d1GDcsX6WWIWdvn29KbQcT7qrfWNMGLLMb7byQXtydcYrdNjcm9uoZnyYkM2WciEGIPFhMA600Td4jGLRe';
+
+  const [cards, setCards] = useState([]);
+  const { initPaymentSheet, presentPaymentSheet, confirmPaymentSheetPayment } = useStripe();
+  const [load, setLoad] = useState(true);
+  const [ephKey, setEphKey] = useState();
+  const [paymentInProgress, setPaymentInProgress] = useState(false);  
+  const [clientSecret, setClientSecret] = useState();
+  const [setIntent, setSetIntente] = useState();
+  const [customerId, setCustomerId] = useState();
+
+  const fetchPaymentSheetParams = async () => {
+    const response = await fetch(`${network.serverip}/payment-sheet`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: user.email,
+        name: user.name + ' ' + user.surname,
+      }),
+    });
+    const { setupIntent, ephemeralKey, customer , clientSecret} = await response.json();
+
+    setEphKey(ephemeralKey);
+    setSetIntente(setupIntent);
+    setClientSecret(clientSecret);
+    setCustomerId(customer);
+
+    const storedPaymentDetailsString = await AsyncStorage.getItem('paymentDetails');
+    const storedPaymentDetails = JSON.parse(storedPaymentDetailsString);
+    setCards(storedPaymentDetails);
+    console.log(storedPaymentDetails);
+
+    return {
+      setupIntent,
+      ephemeralKey,
+      customer,
+      clientSecret,
+    };
+  };
+
+  const initializePaymentSheet = async () => {
+    const {
+      setupIntent,
+      ephemeralKey,
+      customer,
+      clientSecret,
+    } = await fetchPaymentSheetParams();
+
+    const { error } = await initPaymentSheet({
+      merchantDisplayName: "Mattia Noris",
+      customerId: customer,
+      customerEphemeralKeySecret: ephemeralKey,
+      setupIntentClientSecret: setupIntent,
+      allowsDelayedPaymentMethods: true,
+      customFlow: true,
+      applePay: {
+        merchantCountryCode: "IT"
+      },
+    });
+    if (!error) {
+      setLoad(false);
+    } else {
+      console.log(error)
+    }
+  };
+
+  const openPaymentSheet = async () => {
+    const { error, paymentOption  } = await presentPaymentSheet({clientSecret: clientSecret});
+
+    if (error) {
+      Alert.alert(`Error code: ${error.code}`, error.message);
+    } else {
+      setLoad(true);
+      try {
+
+        const { error, paymentMethod } = await confirmPaymentSheetPayment();
+        console.log(paymentOption);
+
+        if (error) {
+          Alert.alert(`Error code: ${error.code}`, error.message);
+        } else {
+          Alert.alert(
+            'Success',
+            'Your order is confirmed!'
+          );
+        }
+        if (paymentOption) {
+          const cardDetails = {
+            last4: paymentOption.label,
+            created: new Date(),
+          };
+    
+          const response = await fetch(`${network.serverip}/save-payment-details`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              id: user._id,
+              customerId: customerId,
+              setupIntentId: setIntent.id,
+              ephemeralKey: ephKey,
+              ...cardDetails,
+            }),
+          });
+    
+          if (response.ok) {
+            console.log('Success', 'Your payment method is successfully set up for future payments!');
+            const paymentDetails = [{
+              customerId: customerId,
+              last4: paymentOption.label,
+            }];
+            
+            const paymentDetailsString = JSON.stringify(paymentDetails);
+            
+            await AsyncStorage.setItem('paymentDetails', paymentDetailsString);
+            setCards(paymentDetails);
+            setLoad(false);
+          } else {
+            const data = await response.json();
+            console.error('Errore:', data.message);
+            Alert.alert('Error', 'Failed to save payment details. Please try again.');
+          }
+        } else {
+          console.log(paymentMethod, 'OPZIONE PAGAMENTO: ' + paymentOption);
+        }
+    } catch (error) {
+      console.error('Errore:', error.message);
+      Alert.alert('Error', 'An error occurred while processing the payment. Please try again.');
+    }
+    }
+  }; 
+
+  useEffect(() => {
+    initializePaymentSheet();
+  }, []);
+
+  const confirmPayment = async (clientSecret) => {
+    try {
+      const { setupIntent, error } = await confirmSetupIntent(clientSecret, {
+        paymentMethodType: 'card',
+      });
+      
+      if (error) {
+        console.error('Errore durante la conferma del pagamento:', error.message);
+      } else {
+        console.log('Pagamento confermato con successo:', setupIntent);
+      }
+    } catch (error) {
+      console.error('Errore generico durante la conferma del pagamento:', error.message);
+    }
+  };
+
+  const handlePayment = async () => {
+    const response = await fetch(`${network.serverip}/charge-customer`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        customerId: "cus_P7xCFIFF05uAGM", 
+      }),
+    });
+  
+    const { success, clientSecret } = await response.json();
+  
+    if (success) {
+      await confirmPayment(clientSecret);
+  
+      if (error) {
+        console.error('Errore durante la conferma del pagamento:', error.message);
+      } else {
+        console.log('Pagamento confermato con successo:', paymentMethod);
+      }
+    } else {
+      console.error('Errore nel backend durante la creazione del SetupIntent.');
+    }
+  };
 
   return (
       <LinearGradient 
@@ -246,10 +451,21 @@ export default function Home({navigation, route}) {
         style={styles.container}
       >
          {isScanning && hasPermission && (
+            <View style={{
+              position: 'relative',
+              width: '100%',
+              height: '100%',
+              zIndex: 11,
+            }}>
+              <TouchableOpacity onPress={() => setIsScanning(false)} style={{position: 'absolute', left: 20, zIndex: 20, top : 80, backgroundColor: colors.light, width: 40, height: 40, borderRadius: 50, justifyContent: 'center', alignItems: 'center'}} >
+                  <Ionicons name='close' size={25} color={colors.dark} />                
+              </TouchableOpacity> 
               <BarCodeScanner
                 onBarCodeScanned={handleBarCodeScanned}
                 style={styles.cameraScanner}
-                />
+                />              
+            </View>
+
             )}
           {filterPopup && (
               <View style={styles.popupShadow}>
@@ -261,7 +477,8 @@ export default function Home({navigation, route}) {
                 setOnlyClosed={setOnlyClosed}
                 onlyAvailable={onlyAvailable}
                 setOnlyAvailable={setOnlyAvailable}
-                hanldeFilterStation={hanldeFilterStation} />
+                hanldeFilterStation={hanldeFilterStation}
+                t={t} />
               </View>
             )}    
     <SafeAreaView style={styles.container}> 
@@ -319,18 +536,18 @@ export default function Home({navigation, route}) {
           }
 
           {/*TabButton(currentTab, setCurrentTab, "Home", 'home', 'home', navigation, user)*/}
-          {TabButton(currentTab, setCurrentTab, "Noleggi gratis", 'gift-outline', 'noleggigratis', navigation, user)}
-          {TabButton(currentTab, setCurrentTab, "Pagamenti", 'card-outline', 'payments', navigation, user)}
-          {TabButton(currentTab, setCurrentTab, "Tariffe", 'cash-outline', 'prices', navigation, user)}
-          {TabButton(currentTab, setCurrentTab, "Profilo", 'person-outline', 'profile', navigation, user)}
-          {TabButton(currentTab, setCurrentTab, "Aiuto", 'help-circle-outline', 'help', navigation, user)}
-          {TabButton(currentTab, setCurrentTab, "Termini e Condizioni", 'document-text-outline', 'terms', navigation, user)}
-          {TabButton(currentTab, setCurrentTab, "Privacy", 'shield-checkmark-outline', 'privacy', navigation, user)}
+          {TabButton(currentTab, setCurrentTab, t('noleggi-gratis'), 'gift-outline', 'noleggigratis', navigation, user)}
+          {TabButton(currentTab, setCurrentTab, t('pagamenti'), 'card-outline', 'payments', navigation, user)}
+          {TabButton(currentTab, setCurrentTab, t('tariffe'), 'cash-outline', 'prices', navigation, user)}
+          {TabButton(currentTab, setCurrentTab, t('profilo'), 'person-outline', 'profile', navigation, user)}
+          {TabButton(currentTab, setCurrentTab, t('aiuto'), 'help-circle-outline', 'help', navigation, user)}
+          {TabButton(currentTab, setCurrentTab, t('termini-condizioni'), 'document-text-outline', 'terms', navigation, user)}
+          {TabButton(currentTab, setCurrentTab, t('privacy'), 'shield-checkmark-outline', 'privacy', navigation, user)}
 
         </View>
 
         <View>
-          {TabButton(currentTab, setCurrentTab, "Esci", 'exit-outline', 'login', navigation)}
+          {TabButton(currentTab, setCurrentTab, t('esci'), 'exit-outline', 'login', navigation)}
         </View>
 
       </View>
@@ -365,7 +582,7 @@ export default function Home({navigation, route}) {
             justifyContent: 'center',
             flexDirection: 'row',
             alignItems: 'center',
-            marginTop: 50,
+            marginTop: 30,
             width: '100%'
           }}>
           <TouchableOpacity 
@@ -423,6 +640,7 @@ export default function Home({navigation, route}) {
                   width: '58%',
                   paddingHorizontal: 15,
                   paddingVertical: 15,
+                  left: 5,
                   backgroundColor: colors.dark,  // Aggiungi un colore di sfondo
                   shadowColor: colors.light_black,
                   elevation: 10,
@@ -437,8 +655,8 @@ export default function Home({navigation, route}) {
               >
                 <Ionicons name='search' color={colors.light} size={20} />
                 <TextInput
-                style={{marginLeft: 6, fontSize: 17, fontWeight: 600, color: colors.light}}
-                placeholder="Cerca posizione"
+                style={{marginLeft: 6, fontSize: 17, color: colors.light, fontFamily: 'poppins_500'}}
+                placeholder={t("search-position")}
                 placeholderTextColor={colors.light}
                 value={filterText}
                 onChangeText={handleInputChange}
@@ -512,7 +730,7 @@ export default function Home({navigation, route}) {
                       pinColor={selectedStationId === station.id ? 'blue' : 'red'}
                       onPress={() => handlePressStation(station)}
                     >
-                      <Image source={station.status == "offline" ? require('../../assets/pointerGray.png') : station.numberPowerBank > 0 ? require('../../assets/pointer.png') : require('../../assets/pointerRed.png')} style={{height: 50, width: 36 }} />
+                      <Image source={station.status == "offline" || station.numberPowerBank == 0 ? require('../../assets/pointerGray.png') : require('../../assets/pointer.png')} style={{height: 36, width: 36 }} />
                       </Marker>
                   ))}
             </MapView>
@@ -532,7 +750,7 @@ export default function Home({navigation, route}) {
                         <View style={{
                           width: '60%'
                         }}>
-                          <Text style={{color: colors.dark, fontWeight: 700}}>{selectedStationId?.title}</Text>
+                          <Text style={{color: colors.dark}}>{selectedStationId?.title}</Text>
                           <View style={{
                             backgroundColor: selectedStationId.status == 'offline' ? '#999999' : selectedStationId.numberPowerBank > 0 ? '#00C213' : '#B50000',
                             paddingVertical: 3,
@@ -552,6 +770,11 @@ export default function Home({navigation, route}) {
                         </View>
                       </TouchableOpacity>  
                     )}
+                      <StripeProvider
+                          publishableKey={publishableKey}
+                          urlScheme="your-url-scheme"
+                          merchantIdentifier="merchant.com.{{YOUR_APP_NAME}}"
+                          >
                     <View style={styles.scanContainerbutton}>
                     <TouchableOpacity style={{
                         backgroundColor: colors.dark,
@@ -564,14 +787,16 @@ export default function Home({navigation, route}) {
                         justifyContent: 'center',
                         alignItems: 'center',
                         position: 'absolute',
-                        right: 20,
-                      }}>
-                        <Ionicons size={25} name='location' color={"#74F680"} />
+                        right: 25,
+                      }}
+                      onPress={getLocationUser}>
+                        <Ionicons size={25} name='location' color={colors.light} />
                       </TouchableOpacity>  
-                      <TouchableOpacity style={styles.scanButton} onPress={handleScanButtonPress}>
+                      <TouchableOpacity style={styles.scanButton} onPress={card && user && card.length > 0 ? handleScanButtonPress : openPaymentSheet}>
                           <Ionicons name="qr-code" size={30} color={!isScanning ? colors.green : 'green'} />
                       </TouchableOpacity>                    
                     </View>
+                    </StripeProvider>
 
                 </View>
             </View>
@@ -620,7 +845,6 @@ const TabButton = (currentTab, setCurrentTab, title, image, route, navigation, u
 
         <Text style={{
           fontSize: 16,
-          fontWeight: '500',
           fontFamily: 'poppins_500',
           paddingLeft: 15,
           color: currentTab == title ? "#fff" : colors.light
@@ -631,7 +855,7 @@ const TabButton = (currentTab, setCurrentTab, title, image, route, navigation, u
   );
 }
 
-const FilterPopup = ({setPopupFilter, onlyOpen, setOnlyOpen, onlyAvailable, setOnlyAvailable, onlyClosed, setOnlyClosed, hanldeFilterStation}) => {
+const FilterPopup = ({setPopupFilter, onlyOpen, setOnlyOpen, onlyAvailable, setOnlyAvailable, onlyClosed, setOnlyClosed, hanldeFilterStation, t}) => {
   return (
     <View style={styles.popupFilter}>
       <View style={styles.topPopup}>
@@ -649,11 +873,11 @@ const FilterPopup = ({setPopupFilter, onlyOpen, setOnlyOpen, onlyAvailable, setO
         onPress={() => setPopupFilter(false)}>
           <Ionicons name='close' size={20} color={colors.dark} />
         </TouchableOpacity>
-        <Text style={{color: colors.light, fontSize: 22, fontWeight: 600,}}>Filtra</Text>
+        <Text style={{color: colors.light, fontSize: 22, fontFamily: 'poppins_500'}}>{t('filtra')}</Text>
       </View>
       <View style={styles.bodyFilter}>
         <View style={styles.filterItem}>
-        <Text style={{color: colors.muted, fontWeight: '500', fontSize: 16,}}>Mostra solo aperti</Text>
+        <Text style={{color: colors.muted, fontSize: 16, fontFamily: 'poppins_500'}}>{t('filter1')}</Text>
           <Switch
             trackColor={{ false: colors.muted, true: colors.dark }}
             thumbColor={onlyOpen ? colors.green : '#f4f3f4'}
@@ -663,7 +887,7 @@ const FilterPopup = ({setPopupFilter, onlyOpen, setOnlyOpen, onlyAvailable, setO
           />
         </View>
         <View style={styles.filterItem}>
-        <Text style={{color: colors.muted, fontWeight: '500', fontSize: 16, width: '60%'}}>Mostra solo con batterie disponibili</Text>
+        <Text style={{color: colors.muted, fontSize: 16, width: '60%', fontFamily: 'poppins_500'}}>{t('filter2')}</Text>
           <Switch
             trackColor={{ false: colors.muted, true: colors.orange }}
             thumbColor={onlyAvailable ? colors.green : '#f4f3f4'}
@@ -673,7 +897,7 @@ const FilterPopup = ({setPopupFilter, onlyOpen, setOnlyOpen, onlyAvailable, setO
           />
         </View>
         <View style={styles.filterItem}>
-        <Text style={{color: colors.muted, fontWeight: '500', fontSize: 16, width: '60%'}}>Mostra solo con slot liberi</Text>
+        <Text style={{color: colors.muted, fontSize: 16, width: '60%', fontFamily: 'poppins_500'}}>{t('filter3')}</Text>
           <Switch
             trackColor={{ false: colors.muted, true: colors.orange }}
             thumbColor={onlyClosed ? colors.green : '#f4f3f4'}
@@ -699,7 +923,7 @@ const FilterPopup = ({setPopupFilter, onlyOpen, setOnlyOpen, onlyAvailable, setO
           alignItems: 'center',
         }}
         onPress={hanldeFilterStation}>
-          <Text style={{color: colors.light, fontWeight: 500, fontSize: 18}}>Applica</Text>
+          <Text style={{color: colors.light, fontSize: 18, fontFamily: 'poppins_600'}}>{t('button-filter')}</Text>
         </TouchableOpacity>        
       </View>
 
@@ -735,7 +959,7 @@ const styles = StyleSheet.create({
     width: "100%",
     flexDirecion: "row",
     paddingBottom: 0,
-    height: '84%',
+    height: '86%',
     overflow: 'hidden',
     borderBottomLeftRadius: 40,
     borderBottomRightRadius: 40,
@@ -747,16 +971,19 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderBottomLeftRadius: 40,
     borderBottomRightRadius: 40,
+    position: 'absolute',
+    bottom: 0,
   },
   mapcontainer: {
     width: '100%',
     height: '100%',
     zIndex: 10,
     overflow: 'hidden',
-    borderTopLeftRadius: 50,
-    borderTopRightRadius: 50,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
     borderBottomLeftRadius: 40,
     borderBottomRightRadius: 40,
+    position:'relative',
   },
   scanButton: {
     display: "flex",
@@ -793,7 +1020,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 115,
     marginBottom: -80,
-    marginTop: -55,
+    marginTop: -45,
     zIndex: 10,
   },
   UserProfileCardContianer: {
@@ -819,7 +1046,6 @@ const styles = StyleSheet.create({
   cameraScanner: {
     width: '100%',
     height: '100%',
-    zIndex: 11,
   },
 
   popupFilter: {
@@ -832,7 +1058,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 5,
-    width: '80%',
+    width: '90%',
   },
   topPopup: {
     width: '100%',

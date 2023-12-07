@@ -1,20 +1,22 @@
 import { StyleSheet, Text, View } from "react-native";
 import React from "react";
 import { colors } from "../../constants";
+import {useTranslation} from 'react-i18next';
 
 const UserProfileCard = ({ minuti, noleggi, inviti }) => {
+  const {t} = useTranslation();
   return (
     <View style={styles.Container}>
       <View style={styles.infoContainer}>
-        <Text style={styles.usernameText}>Minuti</Text>
+        <Text style={styles.usernameText}>{t('minuti')}</Text>
         <Text style={styles.secondaryText}>{minuti}</Text>
       </View>
       <View style={styles.infoContainer}>
-        <Text style={styles.usernameText}>Noleggi</Text>
+        <Text style={styles.usernameText}>{t('noleggi')}</Text>
         <Text style={styles.secondaryText}>{noleggi}</Text>
       </View>
       <View style={styles.infoContainer}>
-        <Text style={styles.usernameText}>Inviti</Text>
+        <Text style={styles.usernameText}>{t('inviti')}</Text>
         <Text style={styles.secondaryText}>{inviti}</Text>
       </View>
     </View>
@@ -41,12 +43,14 @@ const styles = StyleSheet.create({
   },
   usernameText: {
     fontWeight: "500",
-    fontSize: 16,
+    fontSize: 14,
     color:colors.light,
+    fontFamily: 'poppins_500'
   },
   secondaryText: {
     fontWeight: "600",
-    fontSize: 46,
-    color: "#74F680"
+    fontSize: 40,
+    color: "#74F680",
+    fontFamily: 'poppins_600'
   },
 });

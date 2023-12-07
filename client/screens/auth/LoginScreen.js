@@ -13,14 +13,16 @@ import LottieView from 'lottie-react-native';
 import React, { useState, useRef } from "react";
 import { colors, network } from "../../constants";
 import CustomInput from "../../components/CustomInput";
-import header_logo from "../../assets/logo-serv.png";
+import header_logo from "../../assets/charger-logo.png";
 import CustomButton from "../../components/CustomButton";
 import CustomAlert from "../../components/CustomAlert/CustomAlert";
 import ProgressDialog from "react-native-progress-dialog";
 import InternetConnectionAlert from "react-native-internet-connection-alert";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {useTranslation} from 'react-i18next';
 
 const LoginScreen = ({ navigation }) => {
+  const {t} = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -146,7 +148,7 @@ const LoginScreen = ({ navigation }) => {
             </View>
           </View>
           <View style={styles.screenNameContainer}>
-            <Text style={styles.screenNameText}>Accedi</Text>
+            <Text style={styles.screenNameText}>{t('accedi')}</Text>
           </View>
           <View style={styles.formContainer}>
             <CustomAlert message={error} type={"error"} />
@@ -170,7 +172,7 @@ const LoginScreen = ({ navigation }) => {
                 onPress={() => navigation.navigate("forgetpassword")}
                 style={styles.ForgetText}
               >
-                Password dimenticata?
+                {t('password-dimenticata')}
               </Text>
             </View>
           </View>
@@ -180,23 +182,23 @@ const LoginScreen = ({ navigation }) => {
           onPress={loginHandle}
           style={{
             padding: 15,
-            paddingVertical: 18,
+            paddingVertical: 16,
             width: "100%",
             marginBottom: 10,
             alignItems: "center",
             borderRadius: 30,
-            backgroundColor: colors.orange,
+            backgroundColor: colors.green,
           }}>
-            <Text style={{color: colors.light, fontWeight: '500'}}>Accedi</Text>
+            <Text style={{color: colors.dark, fontFamily: 'poppins_600', fontSize: 18,}}>{t('accedi')}</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.bottomContainer}>
-          <Text style={{color: colors.light}}>Non hai ancora un account?  </Text>
+          <Text style={{color: colors.light, fontFamily: 'poppins_500'}}>{t('non-hai-ancora-account')}  </Text>
           <Text
             onPress={() => navigation.navigate("signup")}
             style={styles.signupText}
           >
-            Registrati
+            {t('registrati')}
           </Text>
         </View>
       </KeyboardAvoidingView>
@@ -225,7 +227,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     alignItems: "center",
     height: "10%",
-    // padding:15
+    paddingTop: 15,
+    marginTop: 40,
+    marginBottom: 40,
   },
   formContainer: {
     flex: 3,
@@ -242,12 +246,10 @@ const styles = StyleSheet.create({
   },
   welcomeText: {
     fontSize: 34,
-    fontWeight: "bold",
     color: colors.muted,
   },
   welcomeParagraph: {
     fontSize: 14,
-    fontWeight: "500",
     color: colors.primary_shadow,
   },
   forgetPasswordContainer: {
@@ -260,8 +262,8 @@ const styles = StyleSheet.create({
   },
   ForgetText: {
     fontSize: 15,
-    fontWeight: "600",
-    color: colors.light
+    color: colors.light,
+    fontFamily: 'poppins_600',
   },
   buttomContainer: {
     display: "flex",
@@ -276,9 +278,9 @@ const styles = StyleSheet.create({
   },
   signupText: {
     marginLeft: 2,
-    color: colors.orange,
+    color: colors.light,
     fontSize: 15,
-    fontWeight: "600",
+    fontFamily: 'poppins_600',
   },
   screenNameContainer: {
     marginTop: 10,
@@ -290,8 +292,8 @@ const styles = StyleSheet.create({
   },
   screenNameText: {
     fontSize: 30,
-    fontWeight: "800",
     color: colors.light,
+    fontFamily: 'poppins_600'
   },
   popupShadow: {
     width: '100%',
